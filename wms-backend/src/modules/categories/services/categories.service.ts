@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { DataSource } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
 import {
   CategoryCodeDuplicateException,
   CategoryHasChildrenException,
@@ -10,6 +11,7 @@ import {
 } from '../../../common/exceptions/category.exceptions';
 import { ListResponseDto } from '../../../common/dto/list-response.dto';
 import { Category } from '../../../database/entities/category.entity';
+import { Product } from '../../../database/entities/product.entity';
 import { CategoryResponseDto } from '../dto/category-response.dto';
 import { CreateCategoryDto } from '../dto/create-category.dto';
 import { ListCategoriesQueryDto } from '../dto/list-categories-query.dto';
@@ -35,12 +37,12 @@ export class CategoriesService {
     private readonly categoriesRepo: CategoriesRepository,
     private readonly categoryClosureService: CategoryClosureService,
     private readonly dataSource: DataSource,
+    @InjectRepository(Product)
+    private readonly productRepo: Repository<Product>,
   ) {}
 
-  /** Stub: bổ sung khi có module Product. */
   private async countProductsByCategoryId(categoryId: string): Promise<number> {
-    void categoryId;
-    return 0;
+    return this.productRepo.count({ where: { categoryId } });
   }
 
   async list(

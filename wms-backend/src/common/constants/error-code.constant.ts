@@ -25,6 +25,18 @@ export const ErrorCode = {
   UNIT_NOT_FOUND: 'UNIT_NOT_FOUND',
   UNIT_CODE_DUPLICATE: 'UNIT_CODE_DUPLICATE',
   UNIT_IN_USE: 'UNIT_IN_USE',
+
+  // Product
+  PRODUCT_NOT_FOUND: 'PRODUCT_NOT_FOUND',
+  PRODUCT_CODE_DUPLICATE: 'PRODUCT_CODE_DUPLICATE',
+
+  // Product variant
+  VARIANT_NOT_FOUND: 'VARIANT_NOT_FOUND',
+  VARIANT_SKU_DUPLICATE: 'VARIANT_SKU_DUPLICATE',
+  VARIANT_BARCODE_DUPLICATE: 'VARIANT_BARCODE_DUPLICATE',
+  VARIANT_ATTRIBUTE_INVALID: 'VARIANT_ATTRIBUTE_INVALID',
+  VARIANT_COMBO_DUPLICATE: 'VARIANT_COMBO_DUPLICATE',
+  VARIANT_IN_USE: 'VARIANT_IN_USE',
 } as const;
 
 export type ErrorCodeValue = (typeof ErrorCode)[keyof typeof ErrorCode];
@@ -56,4 +68,17 @@ export const ERROR_MESSAGE: Record<ErrorCodeValue, string> = {
   [ErrorCode.UNIT_CODE_DUPLICATE]: 'Mã đơn vị tính đã tồn tại',
   [ErrorCode.UNIT_IN_USE]:
     'Không thể xóa khi còn sản phẩm hoặc chứng từ tham chiếu đơn vị này',
+
+  [ErrorCode.PRODUCT_NOT_FOUND]: 'Không tìm thấy sản phẩm',
+  [ErrorCode.PRODUCT_CODE_DUPLICATE]: 'Mã sản phẩm đã tồn tại',
+
+  [ErrorCode.VARIANT_NOT_FOUND]: 'Không tìm thấy biến thể',
+  [ErrorCode.VARIANT_SKU_DUPLICATE]: 'Mã SKU đã tồn tại',
+  [ErrorCode.VARIANT_BARCODE_DUPLICATE]: 'Mã vạch đã tồn tại',
+  [ErrorCode.VARIANT_ATTRIBUTE_INVALID]:
+    'Tập giá trị thuộc tính không hợp lệ (trùng loại, thiếu hoặc không khả dụng)',
+  [ErrorCode.VARIANT_COMBO_DUPLICATE]:
+    'Đã có biến thể khác cùng tổ hợp giá trị thuộc tính',
+  [ErrorCode.VARIANT_IN_USE]:
+    'Không thể xóa biến thể khi còn tồn/chứng từ tham chiếu',
 };

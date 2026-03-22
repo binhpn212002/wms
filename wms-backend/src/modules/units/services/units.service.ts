@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import {
   UnitCodeDuplicateException,
   UnitInUseException,
@@ -9,16 +11,19 @@ import { CreateUnitDto } from '../dto/create-unit.dto';
 import { ListUnitsQueryDto } from '../dto/list-units-query.dto';
 import { UnitResponseDto } from '../dto/unit-response.dto';
 import { UpdateUnitDto } from '../dto/update-unit.dto';
+import { Product } from '../../../database/entities/product.entity';
 import { UnitsRepository } from '../repositories/units.repository';
 
 @Injectable()
 export class UnitsService {
-  constructor(private readonly unitsRepo: UnitsRepository) {}
+  constructor(
+    private readonly unitsRepo: UnitsRepository,
+    @InjectRepository(Product)
+    private readonly productRepo: Repository<Product>,
+  ) {}
 
-  /** Stub: bổ sung khi có entity Product + `default_uom_id`. */
   private async countProductsByDefaultUomId(unitId: string): Promise<number> {
-    void unitId;
-    return 0;
+    return this.productRepo.count({ where: { defaultUomId: unitId } });
   }
 
   async list(

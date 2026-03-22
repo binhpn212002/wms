@@ -1,5 +1,9 @@
 # Nhà cung cấp — Basic design
 
+## Tài liệu tham chiếu
+
+- [Sản phẩm — basic design](../products/basic-design.md)
+
 ## Mục đích
 
 Lưu **nhà cung cấp** và **thông tin liên hệ**, dùng khi tạo **phiếu nhập kho**.

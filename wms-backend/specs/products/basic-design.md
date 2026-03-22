@@ -2,6 +2,8 @@
 
 ## Tài liệu tham chiếu
 
+- [Detail design](./detail-design.md)
+- [Nhà cung cấp — basic design](../suppliers/basic-design.md)
 - [Thuộc tính (attributes) — basic design](../master-data/attributes/basic-design.md)
 - [Giá trị thuộc tính (attribute values) — basic design](../master-data/attribute-values/basic-design.md)
 

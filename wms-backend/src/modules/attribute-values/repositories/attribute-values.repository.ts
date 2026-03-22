@@ -4,6 +4,7 @@ import { FindOptionsWhere, Not, Repository } from 'typeorm';
 import { ListResponseDto } from '../../../common/dto/list-response.dto';
 import { BaseRepository } from '../../../common/repositories/base.repository';
 import { AttributeValue } from '../../../database/entities/attribute-value.entity';
+import { ProductVariantAttributeValue } from '../../../database/entities/product-variant-attribute-value.entity';
 import { ListAttributeValuesQueryDto } from '../dto/list-attribute-values-query.dto';
 import { SortOrder } from 'src/common/dto/page-option.dto';
 
@@ -65,12 +66,10 @@ export class AttributeValuesRepository extends BaseRepository<AttributeValue> {
     return ListResponseDto.create(data, total, query.page, query.limit);
   }
 
-  /**
-   * Đếm variant/SKU đang tham chiếu — bổ sung khi có bảng map Product.
-   */
-  async countVariantUsageByValueId(_valueId: string): Promise<number> {
-    void _valueId;
-    return 0;
+  async countVariantUsageByValueId(valueId: string): Promise<number> {
+    return this.repository.manager.count(ProductVariantAttributeValue, {
+      where: { attributeValueId: valueId },
+    });
   }
 
   async softDeleteById(id: string): Promise<void> {

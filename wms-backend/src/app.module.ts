@@ -10,6 +10,7 @@ import { AttributeValuesModule } from './modules/attribute-values/attribute-valu
 import { AttributesModule } from './modules/attributes/attributes.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { UnitsModule } from './modules/units/units.module';
+import { ProductsModule } from './modules/products/products.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { UnitsModule } from './modules/units/units.module';
     AttributesModule,
     AttributeValuesModule,
     UnitsModule,
+    ProductsModule,
     // RedisModule,
   ],
   controllers: [AppController],
