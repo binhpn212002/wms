@@ -52,10 +52,10 @@
 │       ├── base.entity.ts
 │       └── base.service.ts
 
-Bước thực hiện khi nhận vào detail-design và tạo file plan.mc trong thư mục specs/moduleA:
+Bước thực hiện khi nhận vào detail-design và tạo file plan.md trong thư mục specs/moduleA:
 
 1. Xác định module: Ví dụ, với moduleA.
-2. Trong thư mục specs/moduleA, tạo file mới có tên là plan.mc để mô tả kế hoạch phát triển.
+2. Trong thư mục specs/moduleA, tạo file mới có tên là plan.md để mô tả kế hoạch phát triển.
 3. Cấu trúc thư mục nên được tạo cho moduleA bên trong src/modules/moduleA với các thành phần cơ bản như sau:
 4. Thêm thư mục entity trong src/database/entities để chứa các entity (ORM models) liên quan.
 5. Đối với file baseRepository dùng chung cho nhiều module, nên tạo một thư mục riêng trong src/common/repositories/ để chứa, ví dụ: src/common/repositories/base.repository.ts. Các module cụ thể nên kế thừa từ baseRepository này để đảm bảo dùng chung logic truy cập dữ liệu ở tầng repository.

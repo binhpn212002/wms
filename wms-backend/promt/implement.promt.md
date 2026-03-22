@@ -1,13 +1,13 @@
 # Prompt: Triển khai code (Implement)
 
-Dùng prompt này khi **đã có** `specs/<module>/detail-design.md` và (nếu có) `specs/<module>/plan.mc` theo quy trình trong `plan.promt.md`. Mục tiêu: sinh code NestJS đúng thiết kế, **ưu tiên tuyệt đối** tái sử dụng các thành phần trong `src/common` khi đã tồn tại hoặc khi thiết kế yêu cầu lớp nền chung.
+Dùng prompt này khi **đã có** `specs/<module>/detail-design.md` và (nếu có) `specs/<module>/plan.md` theo quy trình trong `plan.promt.md`. Mục tiêu: sinh code NestJS đúng thiết kế, **ưu tiên tuyệt đối** tái sử dụng các thành phần trong `src/common` khi đã tồn tại hoặc khi thiết kế yêu cầu lớp nền chung.
 
 ---
 
 ## Đầu vào bắt buộc
 
 - `specs/<module>/detail-design.md` (và các tài liệu liên quan trong cùng thư mục specs).
-- File kế hoạch nếu có: `specs/<module>/plan.mc`.
+- File kế hoạch nếu có: `specs/<module>/plan.md`.
 - Cấu trúc thư mục dự án như mô tả trong `plan.promt.md`.
 
 ---
@@ -41,7 +41,7 @@ Dùng prompt này khi **đã có** `specs/<module>/detail-design.md` và (nếu 
 
 ## Thứ tự thực hiện gợi ý
 
-1. Đọc `detail-design.md` và `plan.mc` (nếu có).  
+1. Đọc `detail-design.md` và `plan.md` (nếu có).  
 2. Kiểm tra/ tạo BaseRepository trong `common/repositories` nếu chưa có và detail-design dùng repository.  
 3. Entity → Repository (extends BaseRepository) → Service → Controller → Module wiring.  
 4. Viết/ chạy test nếu project đã có pattern test (e2e/unit).
@@ -59,4 +59,4 @@ Dùng prompt này khi **đã có** `specs/<module>/detail-design.md` và (nếu 
 
 ## Cách gọi prompt ngắn (copy-paste)
 
-> Implement module `<TênModule>` theo `specs/<module>/detail-design.md` và `specs/<module>/plan.mc`. **Bắt buộc** dùng các thành phần trong `src/common` khi có thể: repository phải kế thừa BaseRepository tại `src/common/repositories/`; entity ưu tiên kế thừa base entity nếu có; không nhân bản guard/filter/interceptor/utils đã có trong `common`. Tuân thủ cấu trúc thư mục trong `plan.promt.md`.
+> Implement module `<TênModule>` theo `specs/<module>/detail-design.md` và `specs/<module>/plan.md`. **Bắt buộc** dùng các thành phần trong `src/common` khi có thể: repository phải kế thừa BaseRepository tại `src/common/repositories/`; entity ưu tiên kế thừa base entity nếu có; không nhân bản guard/filter/interceptor/utils đã có trong `common`. Tuân thủ cấu trúc thư mục trong `plan.promt.md`.

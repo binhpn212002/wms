@@ -3,10 +3,7 @@ import {
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import {
-  ERROR_MESSAGE,
-  ErrorCode,
-} from '../constants/error-code.constant';
+import { ERROR_MESSAGE, ErrorCode } from '../constants/error-code.constant';
 
 export class CategoryNotFoundException extends NotFoundException {
   constructor() {

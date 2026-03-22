@@ -6,6 +6,7 @@ import { AppService } from './app.service';
 import appConfig from './config/app.config';
 import databaseConfig from './config/database.config';
 import redisConfig from './config/redis.config';
+import { AttributeValuesModule } from './modules/attribute-values/attribute-values.module';
 import { AttributesModule } from './modules/attributes/attributes.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 
@@ -36,6 +37,7 @@ import { CategoriesModule } from './modules/categories/categories.module';
     }),
     CategoriesModule,
     AttributesModule,
+    AttributeValuesModule,
     // RedisModule,
   ],
   controllers: [AppController],

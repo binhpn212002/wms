@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, Not, Repository } from 'typeorm';
 import { ListResponseDto } from '../../../common/dto/list-response.dto';
 import { BaseRepository } from '../../../common/repositories/base.repository';
+import { AttributeValue } from '../../../database/entities/attribute-value.entity';
 import { Attribute } from '../../../database/entities/attribute.entity';
 import { ListAttributesQueryDto } from '../dto/list-attributes-query.dto';
 
@@ -11,6 +12,8 @@ export class AttributesRepository extends BaseRepository<Attribute> {
   constructor(
     @InjectRepository(Attribute)
     repository: Repository<Attribute>,
+    @InjectRepository(AttributeValue)
+    private readonly attributeValueRepository: Repository<AttributeValue>,
   ) {
     super(repository);
   }
@@ -60,19 +63,19 @@ export class AttributesRepository extends BaseRepository<Attribute> {
     } else if (sort === 'code') {
       qb.orderBy('a.code', 'ASC');
     } else {
-      qb.orderBy('a.sortOrder', 'ASC', 'NULLS LAST').addOrderBy('a.name', 'ASC');
+      qb.orderBy('a.sortOrder', 'ASC', 'NULLS LAST').addOrderBy(
+        'a.name',
+        'ASC',
+      );
     }
     qb.skip(query.skip).take(query.limit);
     const [data, total] = await qb.getManyAndCount();
     return ListResponseDto.create(data, total, query.page, query.limit);
   }
 
-  /**
-   * Đếm giá trị thuộc tính — bổ sung khi có bảng `attribute_values`.
-   */
-  async countValuesByAttributeId(_attributeId: string): Promise<number> {
-    void _attributeId;
-    return 0;
+  /** Đếm giá trị thuộc tính chưa xóa mềm thuộc attribute. */
+  countValuesByAttributeId(attributeId: string): Promise<number> {
+    return this.attributeValueRepository.countBy({ attributeId });
   }
 
   async softDeleteById(id: string): Promise<void> {

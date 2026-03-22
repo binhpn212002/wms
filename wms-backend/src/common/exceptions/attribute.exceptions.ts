@@ -1,8 +1,5 @@
 import { ConflictException, NotFoundException } from '@nestjs/common';
-import {
-  ERROR_MESSAGE,
-  ErrorCode,
-} from '../constants/error-code.constant';
+import { ERROR_MESSAGE, ErrorCode } from '../constants/error-code.constant';
 
 export class AttributeNotFoundException extends NotFoundException {
   constructor() {
