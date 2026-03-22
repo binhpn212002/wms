@@ -29,12 +29,14 @@ export class SuppliersService {
     private readonly dataSource: DataSource,
   ) {}
 
-  /** Stub: thay bằng đếm phiếu nhập khi có module inbound. */
   private async countInboundRefsBySupplierId(
-    _supplierId: string,
+    supplierId: string,
   ): Promise<number> {
-    void _supplierId;
-    return 0;
+    const rows = (await this.dataSource.query(
+      `SELECT COUNT(*)::int AS c FROM inbound_documents WHERE supplier_id = $1 AND deleted_at IS NULL`,
+      [supplierId],
+    )) as { c: number }[];
+    return rows[0]?.c ?? 0;
   }
 
   private assertAtMostOnePrimary(

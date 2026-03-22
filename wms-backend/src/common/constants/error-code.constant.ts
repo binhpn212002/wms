@@ -62,6 +62,16 @@ export const ErrorCode = {
   LOCATION_PARENT_CYCLE: 'LOCATION_PARENT_CYCLE',
   LOCATION_SUBTREE_HAS_STOCK: 'LOCATION_SUBTREE_HAS_STOCK',
   DEFAULT_LOCATION_MUST_BE_BIN: 'DEFAULT_LOCATION_MUST_BE_BIN',
+
+  // Inbound
+  INBOUND_NOT_FOUND: 'INBOUND_NOT_FOUND',
+  INBOUND_DOCUMENT_NO_DUPLICATE: 'INBOUND_DOCUMENT_NO_DUPLICATE',
+  INBOUND_INVALID_STATUS: 'INBOUND_INVALID_STATUS',
+  INBOUND_CANNOT_MODIFY_COMPLETED: 'INBOUND_CANNOT_MODIFY_COMPLETED',
+  INBOUND_NO_LINES: 'INBOUND_NO_LINES',
+  INBOUND_MISSING_LOCATION: 'INBOUND_MISSING_LOCATION',
+  INBOUND_SUPPLIER_INACTIVE: 'INBOUND_SUPPLIER_INACTIVE',
+  INBOUND_WAREHOUSE_INACTIVE: 'INBOUND_WAREHOUSE_INACTIVE',
 } as const;
 
 export type ErrorCodeValue = (typeof ErrorCode)[keyof typeof ErrorCode];
@@ -136,4 +146,17 @@ export const ERROR_MESSAGE: Record<ErrorCodeValue, string> = {
     'Không thể thay đổi khi cây con còn tồn kho',
   [ErrorCode.DEFAULT_LOCATION_MUST_BE_BIN]:
     'Ô mặc định phải thuộc kho và có loại bin',
+
+  [ErrorCode.INBOUND_NOT_FOUND]: 'Không tìm thấy phiếu nhập',
+  [ErrorCode.INBOUND_DOCUMENT_NO_DUPLICATE]: 'Số phiếu nhập đã tồn tại',
+  [ErrorCode.INBOUND_INVALID_STATUS]: 'Trạng thái phiếu không cho phép thao tác này',
+  [ErrorCode.INBOUND_CANNOT_MODIFY_COMPLETED]:
+    'Không thể sửa phiếu đã hoàn tất',
+  [ErrorCode.INBOUND_NO_LINES]: 'Phiếu nhập chưa có dòng hàng',
+  [ErrorCode.INBOUND_MISSING_LOCATION]:
+    'Thiếu vị trí đích và kho chưa cấu hình ô mặc định',
+  [ErrorCode.INBOUND_SUPPLIER_INACTIVE]:
+    'Nhà cung cấp không hoạt động — không thể chọn cho phiếu mới',
+  [ErrorCode.INBOUND_WAREHOUSE_INACTIVE]:
+    'Kho không hoạt động — không thể chọn cho phiếu mới',
 };
