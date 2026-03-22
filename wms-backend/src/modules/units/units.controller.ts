@@ -54,10 +54,7 @@ export class UnitsController {
   }
 
   @Patch(':id')
-  update(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() dto: UpdateUnitDto,
-  ) {
+  update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateUnitDto) {
     return this.unitsService.update(id, dto);
   }
 

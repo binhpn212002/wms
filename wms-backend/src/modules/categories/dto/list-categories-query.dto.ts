@@ -118,5 +118,4 @@ export class ListCategoriesQueryDto extends PageOptionDto {
   })
   @IsBoolean()
   includeDeleted?: boolean;
-
 }

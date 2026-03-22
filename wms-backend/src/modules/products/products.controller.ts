@@ -39,7 +39,9 @@ export class ProductsController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Chi tiết sản phẩm (kèm biến thể và giá trị thuộc tính)' })
+  @ApiOperation({
+    summary: 'Chi tiết sản phẩm (kèm biến thể và giá trị thuộc tính)',
+  })
   findOne(
     @Param('id', ParseUUIDPipe) id: string,
     @Query() query: GetProductQueryDto,

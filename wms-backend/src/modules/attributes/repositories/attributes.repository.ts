@@ -58,7 +58,7 @@ export class AttributesRepository extends BaseRepository<Attribute> {
     }
     if (query.sort !== undefined) {
       qb.orderBy('a.id', query.sort === SortOrder.ASC ? 'ASC' : 'DESC');
-    } 
+    }
     qb.skip(query.skip).take(query.limit);
     const [data, total] = await qb.getManyAndCount();
     return ListResponseDto.create(data, total, query.page, query.limit);

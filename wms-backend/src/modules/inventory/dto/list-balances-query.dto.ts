@@ -1,7 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import {
-  IsBoolean,
   IsEnum,
   IsInt,
   IsOptional,
@@ -21,13 +20,13 @@ import {
   toInt,
 } from '../../../common/dto/page-option.dto';
 
-export enum ProductSortField {
-  CODE = 'code',
-  NAME = 'name',
-  CREATED_AT = 'created_at',
+export enum BalanceSortField {
+  UPDATED_AT = 'updatedAt',
+  QUANTITY = 'quantity',
+  SKU = 'sku',
 }
 
-export class ListProductsQueryDto extends PageOptionDto {
+export class ListBalancesQueryDto extends PageOptionDto {
   @ApiPropertyOptional({ minimum: 1, default: PAGE_DEFAULT, example: 1 })
   @Transform(({ value }) => {
     const n = toInt(value, PAGE_DEFAULT);
@@ -68,61 +67,36 @@ export class ListProductsQueryDto extends PageOptionDto {
   @MaxLength(QUERY_MAX_LENGTH)
   q?: string;
 
-  @ApiPropertyOptional({
-    enum: ProductSortField,
-    default: ProductSortField.NAME,
-  })
+  @ApiPropertyOptional({ format: 'uuid' })
   @IsOptional()
-  @IsEnum(ProductSortField)
-  sortBy?: ProductSortField;
+  @IsUUID('4')
+  warehouseId?: string;
 
   @ApiPropertyOptional({ format: 'uuid' })
   @IsOptional()
   @IsUUID('4')
-  categoryId?: string;
+  locationId?: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ format: 'uuid' })
   @IsOptional()
-  @Transform(({ value }) => {
-    if (value === undefined || value === null || value === '') {
-      return undefined;
-    }
-    if (value === 'true' || value === true) {
-      return true;
-    }
-    if (value === 'false' || value === false) {
-      return false;
-    }
-    return undefined;
-  })
-  @IsBoolean()
-  active?: boolean;
+  @IsUUID('4')
+  variantId?: string;
 
-  @ApiPropertyOptional({ default: false })
+  @ApiPropertyOptional({ format: 'uuid' })
   @IsOptional()
-  @Transform(({ value }) => {
-    if (value === undefined || value === null || value === '') {
-      return false;
-    }
-    if (value === 'true' || value === true) {
-      return true;
-    }
-    return false;
-  })
-  @IsBoolean()
-  includeDeleted?: boolean;
+  @IsUUID('4')
+  productId?: string;
 
-  @ApiPropertyOptional({ default: false })
-  @IsOptional()
-  @Transform(({ value }) => {
-    if (value === undefined || value === null || value === '') {
-      return false;
-    }
-    if (value === 'true' || value === true) {
-      return true;
-    }
-    return false;
+  @ApiPropertyOptional({
+    enum: BalanceSortField,
+    default: BalanceSortField.UPDATED_AT,
   })
-  @IsBoolean()
-  includeVariants?: boolean;
+  @IsOptional()
+  @IsEnum(BalanceSortField)
+  sortBy?: BalanceSortField;
+
+  @ApiPropertyOptional({ enum: SortOrder, default: SortOrder.DESC })
+  @IsOptional()
+  @IsEnum(SortOrder)
+  sortOrder?: SortOrder = SortOrder.DESC;
 }

@@ -10,7 +10,11 @@ import { SuppliersService } from './services/suppliers.service';
 @Module({
   imports: [TypeOrmModule.forFeature([Supplier, SupplierContact])],
   controllers: [SuppliersController],
-  providers: [SuppliersService, SuppliersRepository, SupplierContactsRepository],
+  providers: [
+    SuppliersService,
+    SuppliersRepository,
+    SupplierContactsRepository,
+  ],
   exports: [SuppliersService, SuppliersRepository, SupplierContactsRepository],
 })
 export class SuppliersModule {}

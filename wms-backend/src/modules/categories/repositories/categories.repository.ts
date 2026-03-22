@@ -60,7 +60,7 @@ export class CategoriesRepository extends BaseRepository<Category> {
     }
     if (query.sort !== undefined) {
       qb.orderBy('c.id', query.sort === SortOrder.ASC ? 'ASC' : 'DESC');
-    } 
+    }
     qb.skip(query.skip).take(query.limit);
     const [data, total] = await qb.getManyAndCount();
     return ListResponseDto.create(data, total, query.page, query.limit);

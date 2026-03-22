@@ -44,6 +44,12 @@ export const ErrorCode = {
   SUPPLIER_TAX_ID_DUPLICATE: 'SUPPLIER_TAX_ID_DUPLICATE',
   SUPPLIER_IN_USE: 'SUPPLIER_IN_USE',
   SUPPLIER_CONTACT_NOT_FOUND: 'SUPPLIER_CONTACT_NOT_FOUND',
+
+  // Inventory
+  INSUFFICIENT_STOCK: 'INSUFFICIENT_STOCK',
+  LOCATION_WAREHOUSE_MISMATCH: 'LOCATION_WAREHOUSE_MISMATCH',
+  WAREHOUSE_NOT_FOUND: 'WAREHOUSE_NOT_FOUND',
+  LOCATION_NOT_FOUND: 'LOCATION_NOT_FOUND',
 } as const;
 
 export type ErrorCodeValue = (typeof ErrorCode)[keyof typeof ErrorCode];
@@ -95,4 +101,9 @@ export const ERROR_MESSAGE: Record<ErrorCodeValue, string> = {
   [ErrorCode.SUPPLIER_IN_USE]:
     'Không thể xóa nhà cung cấp khi còn phiếu nhập/chứng từ tham chiếu',
   [ErrorCode.SUPPLIER_CONTACT_NOT_FOUND]: 'Không tìm thấy liên hệ',
+
+  [ErrorCode.INSUFFICIENT_STOCK]: 'Không đủ tồn kho tại kho/vị trí',
+  [ErrorCode.LOCATION_WAREHOUSE_MISMATCH]: 'Vị trí không thuộc kho đã chọn',
+  [ErrorCode.WAREHOUSE_NOT_FOUND]: 'Không tìm thấy kho',
+  [ErrorCode.LOCATION_NOT_FOUND]: 'Không tìm thấy vị trí',
 };

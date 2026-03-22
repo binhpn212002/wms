@@ -5,7 +5,10 @@ import { ListResponseDto } from '../../../common/dto/list-response.dto';
 import { SortOrder } from 'src/common/dto/page-option.dto';
 import { BaseRepository } from '../../../common/repositories/base.repository';
 import { Product } from '../../../database/entities/product.entity';
-import { ListProductsQueryDto, ProductSortField } from '../dto/list-products-query.dto';
+import {
+  ListProductsQueryDto,
+  ProductSortField,
+} from '../dto/list-products-query.dto';
 
 @Injectable()
 export class ProductsRepository extends BaseRepository<Product> {

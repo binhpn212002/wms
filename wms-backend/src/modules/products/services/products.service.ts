@@ -116,9 +116,8 @@ export class ProductsService {
     excludeVariantId?: string | null,
   ): Promise<void> {
     const key = this.comboKey(attributeValueIds);
-    const vids = await this.productVariantsRepo.findVariantIdsByProductId(
-      productId,
-    );
+    const vids =
+      await this.productVariantsRepo.findVariantIdsByProductId(productId);
     for (const vid of vids) {
       if (excludeVariantId && vid === excludeVariantId) {
         continue;
@@ -153,8 +152,7 @@ export class ProductsService {
     let variantByProduct = new Map<string, ProductVariant[]>();
     if (query.includeVariants && res.data.length > 0) {
       const pids = res.data.map((p) => p.id);
-      const variants =
-        await this.productVariantsRepo.findByProductIds(pids);
+      const variants = await this.productVariantsRepo.findByProductIds(pids);
       variantByProduct = variants.reduce((m, v) => {
         if (v.deletedAt) {
           return m;
@@ -214,50 +212,46 @@ export class ProductsService {
         throw new VariantSkuDuplicateException();
       }
       if (vd.barcode) {
-        if (
-          await this.productVariantsRepo.existsActiveByBarcode(vd.barcode)
-        ) {
+        if (await this.productVariantsRepo.existsActiveByBarcode(vd.barcode)) {
           throw new VariantBarcodeDuplicateException();
         }
       }
     }
 
-    const newProductId = await this.dataSource.transaction(
-      async (manager) => {
-        const productRepo = manager.getRepository(Product);
-        const variantRepo = manager.getRepository(ProductVariant);
-        const mapRepo = manager.getRepository(ProductVariantAttributeValue);
+    const newProductId = await this.dataSource.transaction(async (manager) => {
+      const productRepo = manager.getRepository(Product);
+      const variantRepo = manager.getRepository(ProductVariant);
+      const mapRepo = manager.getRepository(ProductVariantAttributeValue);
 
-        const product = productRepo.create({
-          code,
-          name: dto.name.trim(),
-          categoryId: dto.categoryId,
-          defaultUomId: dto.defaultUomId,
-          active: dto.active ?? true,
+      const product = productRepo.create({
+        code,
+        name: dto.name.trim(),
+        categoryId: dto.categoryId,
+        defaultUomId: dto.defaultUomId,
+        active: dto.active ?? true,
+      });
+      await productRepo.save(product);
+
+      for (const vd of dto.variants) {
+        const variant = variantRepo.create({
+          productId: product.id,
+          sku: vd.sku.trim().toUpperCase(),
+          barcode: vd.barcode?.trim() ? vd.barcode.trim() : null,
         });
-        await productRepo.save(product);
-
-        for (const vd of dto.variants) {
-          const variant = variantRepo.create({
-            productId: product.id,
-            sku: vd.sku.trim().toUpperCase(),
-            barcode: vd.barcode?.trim() ? vd.barcode.trim() : null,
-          });
-          await variantRepo.save(variant);
-          const ids = vd.attributeValueIds ?? [];
-          if (ids.length > 0) {
-            await mapRepo.insert(
-              ids.map((attributeValueId) => ({
-                variantId: variant.id,
-                attributeValueId,
-              })),
-            );
-          }
+        await variantRepo.save(variant);
+        const ids = vd.attributeValueIds ?? [];
+        if (ids.length > 0) {
+          await mapRepo.insert(
+            ids.map((attributeValueId) => ({
+              variantId: variant.id,
+              attributeValueId,
+            })),
+          );
         }
+      }
 
-        return product.id;
-      },
-    );
+      return product.id;
+    });
 
     return this.findOne(newProductId);
   }
@@ -362,10 +356,7 @@ export class ProductsService {
     if (!full) {
       throw new VariantNotFoundException();
     }
-    return ProductVariantResponseDto.fromEntity(
-      full,
-      full.attributeValueMaps,
-    );
+    return ProductVariantResponseDto.fromEntity(full, full.attributeValueMaps);
   }
 
   async updateVariant(
@@ -392,7 +383,10 @@ export class ProductsService {
         dto.barcode === null || dto.barcode === ''
           ? null
           : String(dto.barcode).trim();
-      if (b && (await this.productVariantsRepo.existsActiveByBarcode(b, variantId))) {
+      if (
+        b &&
+        (await this.productVariantsRepo.existsActiveByBarcode(b, variantId))
+      ) {
         throw new VariantBarcodeDuplicateException();
       }
       variant.barcode = b;
@@ -421,10 +415,7 @@ export class ProductsService {
     if (!full) {
       throw new VariantNotFoundException();
     }
-    return ProductVariantResponseDto.fromEntity(
-      full,
-      full.attributeValueMaps,
-    );
+    return ProductVariantResponseDto.fromEntity(full, full.attributeValueMaps);
   }
 
   async removeVariant(productId: string, variantId: string): Promise<void> {

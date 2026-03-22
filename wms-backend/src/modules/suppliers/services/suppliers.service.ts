@@ -1,7 +1,4 @@
-import {
-  Injectable,
-  UnprocessableEntityException,
-} from '@nestjs/common';
+import { Injectable, UnprocessableEntityException } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { ListResponseDto } from '../../../common/dto/list-response.dto';
 import {
@@ -142,7 +139,10 @@ export class SuppliersService {
     return this.findOne(newId, {});
   }
 
-  async update(id: string, dto: UpdateSupplierDto): Promise<SupplierResponseDto> {
+  async update(
+    id: string,
+    dto: UpdateSupplierDto,
+  ): Promise<SupplierResponseDto> {
     const s = await this.suppliersRepo.findById(id);
     if (!s || s.deletedAt) {
       throw new SupplierNotFoundException();
@@ -159,10 +159,7 @@ export class SuppliersService {
     }
     if (dto.taxId !== undefined) {
       const taxId = this.normalizeTaxId(dto.taxId);
-      if (
-        taxId &&
-        (await this.suppliersRepo.existsActiveByTaxId(taxId, id))
-      ) {
+      if (taxId && (await this.suppliersRepo.existsActiveByTaxId(taxId, id))) {
         throw new SupplierTaxIdDuplicateException();
       }
       s.taxId = taxId;

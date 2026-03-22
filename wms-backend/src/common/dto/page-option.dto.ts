@@ -84,7 +84,7 @@ export class PageOptionDto {
   @IsString()
   @MaxLength(QUERY_MAX_LENGTH)
   q?: string;
-  
+
   @ApiPropertyOptional({ enum: SortOrder })
   @IsOptional()
   @IsEnum(SortOrder)
