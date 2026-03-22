@@ -8,6 +8,7 @@
 - [Sản phẩm — detail design](../products/detail-design.md)
 - [Nhập kho — basic design](../inbound/basic-design.md)
 - [Xuất kho — basic design](../outbound/basic-design.md)
+- [Xuất kho — detail design](../outbound/detail-design.md)
 - [Chuyển kho — basic design](../transfers/basic-design.md)
 
 ## Phạm vi MVP

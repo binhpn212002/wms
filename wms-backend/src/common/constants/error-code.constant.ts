@@ -72,6 +72,14 @@ export const ErrorCode = {
   INBOUND_MISSING_LOCATION: 'INBOUND_MISSING_LOCATION',
   INBOUND_SUPPLIER_INACTIVE: 'INBOUND_SUPPLIER_INACTIVE',
   INBOUND_WAREHOUSE_INACTIVE: 'INBOUND_WAREHOUSE_INACTIVE',
+
+  // Outbound
+  OUTBOUND_NOT_FOUND: 'OUTBOUND_NOT_FOUND',
+  OUTBOUND_DOCUMENT_NO_DUPLICATE: 'OUTBOUND_DOCUMENT_NO_DUPLICATE',
+  OUTBOUND_INVALID_STATUS: 'OUTBOUND_INVALID_STATUS',
+  OUTBOUND_CANNOT_MODIFY_COMPLETED: 'OUTBOUND_CANNOT_MODIFY_COMPLETED',
+  OUTBOUND_NO_LINES: 'OUTBOUND_NO_LINES',
+  OUTBOUND_WAREHOUSE_INACTIVE: 'OUTBOUND_WAREHOUSE_INACTIVE',
 } as const;
 
 export type ErrorCodeValue = (typeof ErrorCode)[keyof typeof ErrorCode];
@@ -159,4 +167,14 @@ export const ERROR_MESSAGE: Record<ErrorCodeValue, string> = {
     'Nhà cung cấp không hoạt động — không thể chọn cho phiếu mới',
   [ErrorCode.INBOUND_WAREHOUSE_INACTIVE]:
     'Kho không hoạt động — không thể chọn cho phiếu mới',
+
+  [ErrorCode.OUTBOUND_NOT_FOUND]: 'Không tìm thấy phiếu xuất',
+  [ErrorCode.OUTBOUND_DOCUMENT_NO_DUPLICATE]: 'Số phiếu xuất đã tồn tại',
+  [ErrorCode.OUTBOUND_INVALID_STATUS]:
+    'Trạng thái phiếu xuất không cho phép thao tác này',
+  [ErrorCode.OUTBOUND_CANNOT_MODIFY_COMPLETED]:
+    'Không thể sửa phiếu xuất đã hoàn tất',
+  [ErrorCode.OUTBOUND_NO_LINES]: 'Phiếu xuất chưa có dòng hàng',
+  [ErrorCode.OUTBOUND_WAREHOUSE_INACTIVE]:
+    'Kho không hoạt động — không thể chọn cho phiếu xuất mới',
 };

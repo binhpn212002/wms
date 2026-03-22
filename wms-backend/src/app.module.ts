@@ -13,6 +13,7 @@ import { UnitsModule } from './modules/units/units.module';
 import { ProductsModule } from './modules/products/products.module';
 import { SuppliersModule } from './modules/suppliers/suppliers.module';
 import { InboundModule } from './modules/inbound/inbound.module';
+import { OutboundModule } from './modules/outbound/outbound.module';
 import { InventoryModule } from './modules/inventory/inventory.module';
 import { WarehousesModule } from './modules/warehouses/warehouses.module';
 
@@ -49,6 +50,7 @@ import { WarehousesModule } from './modules/warehouses/warehouses.module';
     SuppliersModule,
     InventoryModule,
     InboundModule,
+    OutboundModule,
     WarehousesModule,
     // RedisModule,
   ],
