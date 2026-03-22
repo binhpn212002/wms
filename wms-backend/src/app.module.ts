@@ -6,7 +6,7 @@ import { AppService } from './app.service';
 import appConfig from './config/app.config';
 import databaseConfig from './config/database.config';
 import redisConfig from './config/redis.config';
-import { RedisModule } from './redis/redis.module';
+import { CategoriesModule } from './modules/categories/categories.module';
 
 @Module({
   imports: [
@@ -33,7 +33,8 @@ import { RedisModule } from './redis/redis.module';
         };
       },
     }),
-    RedisModule,
+    CategoriesModule,
+    // RedisModule,
   ],
   controllers: [AppController],
   providers: [AppService],

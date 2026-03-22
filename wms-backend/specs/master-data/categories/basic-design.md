@@ -6,7 +6,7 @@ Phân nhóm sản phẩm để lọc, báo cáo, và (sau này) phân quyền th
 
 ## MVP
 
-- Trường gợi ý: `code`, `name`, `parent_id` (nullable — MVP có thể chỉ 1 cấp), `active`.
+- Trường gợi ý: `code`, `name`, `parent_id` (nullable — MVP có thể chỉ 1 cấp), `active`, `deleted_at` (xóa mềm).
 - Cây phân cấp: dùng `parent_id`; không bắt buộc MVP.
 
 ## Quy tắc
@@ -17,3 +17,7 @@ Phân nhóm sản phẩm để lọc, báo cáo, và (sau này) phân quyền th
 ## API gợi ý
 
 `GET/POST/PATCH/DELETE /master-data/categories`
+
+## Tài liệu chi tiết
+
+- [Detail design](./detail-design.md)

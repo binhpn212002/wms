@@ -34,8 +34,7 @@ export class ListResponseDto<T> {
     dto.total = total;
     dto.page = page;
     dto.limit = limit;
-    dto.totalPages =
-      limit > 0 ? Math.max(0, Math.ceil(total / limit)) : 0;
+    dto.totalPages = limit > 0 ? Math.max(0, Math.ceil(total / limit)) : 0;
     return dto;
   }
 }

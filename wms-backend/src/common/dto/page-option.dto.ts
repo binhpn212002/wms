@@ -9,6 +9,7 @@ import {
   validateSync,
 } from 'class-validator';
 import { BadRequestException } from '@nestjs/common';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 
 /** Giới hạn tối đa số bản ghi mỗi trang (tránh query quá lớn). */
 export const PAGE_LIMIT_MAX = 100;
@@ -20,7 +21,8 @@ export const LIMIT_DEFAULT = 10;
 /** Độ dài tối đa chuỗi tìm kiếm `q`. */
 export const QUERY_MAX_LENGTH = 500;
 
-function toInt(value: unknown, fallback: number): number {
+/** Dùng chung cho query DTO (page/limit). */
+export function toInt(value: unknown, fallback: number): number {
   if (value === undefined || value === null || value === '') {
     return fallback;
   }
@@ -36,14 +38,21 @@ function toInt(value: unknown, fallback: number): number {
  * Dùng với `ValidationPipe({ transform: true })` hoặc `PageOptionDto.fromQuery()`.
  */
 export class PageOptionDto {
+  @ApiPropertyOptional({ minimum: 1, default: PAGE_DEFAULT, example: 1 })
   @Transform(({ value }) => {
     const n = toInt(value, PAGE_DEFAULT);
     return n < 1 ? PAGE_DEFAULT : n;
   })
   @IsInt()
   @Min(1)
-  page: number;
+  page: number = PAGE_DEFAULT;
 
+  @ApiPropertyOptional({
+    minimum: 1,
+    maximum: PAGE_LIMIT_MAX,
+    default: LIMIT_DEFAULT,
+    example: 10,
+  })
   @Transform(({ value }) => {
     const n = toInt(value, LIMIT_DEFAULT);
     if (n < 1) {
@@ -54,9 +63,10 @@ export class PageOptionDto {
   @IsInt()
   @Min(1)
   @Max(PAGE_LIMIT_MAX)
-  limit: number;
+  limit: number = LIMIT_DEFAULT;
 
   /** Từ khóa tìm kiếm (GET ?q=). */
+  @ApiPropertyOptional({ maxLength: QUERY_MAX_LENGTH })
   @IsOptional()
   @Transform(({ value }) => {
     if (value === undefined || value === null) {

@@ -95,5 +95,5 @@ Ghi chú:
 
 Quy trình chi tiết:
 - Khi có detail-design cho một module trong specs/moduleA/detail-design.md, dựa vào đó để xác định các thành phần cần có trong module.
-- Tạo file specs/moduleA/plan.mc để liệt kê kế hoạch phát triển cũng như cấu trúc thư mục sẽ áp dụng cho moduleA trong src/modules/moduleA, bao gồm cả thư mục repositories để lưu các repository của module, thư mục entity trong src/database/entities để lưu các entity của module, thư mục common/repositories để lưu baseRepository dùng chung cho toàn hệ thống, và thư mục common/constants để lưu các file hằng số như module.constant.ts phục vụ chuẩn hoá/tham chiếu tên bảng, enum, key, ...
+- Tạo file specs/moduleA/plan.md để liệt kê kế hoạch phát triển cũng như cấu trúc thư mục sẽ áp dụng cho moduleA trong src/modules/moduleA, bao gồm cả thư mục repositories để lưu các repository của module, thư mục entity trong src/database/entities để lưu các entity của module, thư mục common/repositories để lưu baseRepository dùng chung cho toàn hệ thống, và thư mục common/constants để lưu các file hằng số như module.constant.ts phục vụ chuẩn hoá/tham chiếu tên bảng, enum, key, ...
 
