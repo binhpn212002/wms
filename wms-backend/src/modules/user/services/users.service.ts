@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UseGuards } from '@nestjs/common';
 import type { DecodedIdToken } from 'firebase-admin/auth';
 import { ListResponseDto } from '../../../common/dto/list-response.dto';
 import { UserStatus } from '../../../common/constants/user.constant';
@@ -21,12 +21,15 @@ import { UpdateUserDto } from '../dto/update-user.dto';
 import { UserResponseDto } from '../dto/user-response.dto';
 import { RolesRepository } from '../repositories/roles.repository';
 import { UsersRepository } from '../repositories/users.repository';
+import { FirebaseAdminService } from 'src/modules/auth/services/firebase-admin.service';
+import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 
 @Injectable()
 export class UsersService {
   constructor(
     private readonly usersRepo: UsersRepository,
     private readonly rolesRepo: RolesRepository,
+    private readonly firebaseService: FirebaseAdminService,
   ) {}
 
   /** Map entity (đã load roles.permissions) → payload guard / JWT login. */
@@ -56,9 +59,33 @@ export class UsersService {
       return null;
     }
     if (user.status === UserStatus.INACTIVE) {
-      throw new UnauthorizedException();
+      throw new AuthInvalidCredentialsException();
     }
     return this.mapUserToAuthUser(user);
+  }
+
+  /**
+   * Email dùng với Firebase `signInWithPassword`:
+   * - `username` dạng email → dùng trực tiếp;
+   * - ngược lại → lấy `users.email` (bắt buộc có) của user theo username.
+   */
+  async resolveEmailForPasswordLogin(username: string): Promise<string> {
+    const u = username.trim();
+    if (u.includes('@')) {
+      return u.toLowerCase();
+    }
+    const user = await this.usersRepo.findByUsername(u);
+    if (!user) {
+      throw new AuthInvalidCredentialsException();
+    }
+    if (user.status === UserStatus.INACTIVE) {
+      throw new AuthInvalidCredentialsException();
+    }
+    const email = user.email?.trim();
+    if (!email) {
+      throw new AuthInvalidCredentialsException();
+    }
+    return email.toLowerCase();
   }
 
   /**
@@ -138,11 +165,8 @@ export class UsersService {
       throw new UserPhoneDuplicateException();
     }
 
-    const firebaseId = dto.firebaseId?.trim() || null;
-    if (firebaseId && (await this.usersRepo.existsFirebaseId(firebaseId))) {
-      throw new UserFirebaseIdDuplicateException();
-    }
-
+    // register new user to firebase with email and password is phone
+    const firebaseId = await this.firebaseService.createUser(phone, dto.email ?? '', phone);
     const user = this.usersRepo.create({
       username,
       phone,

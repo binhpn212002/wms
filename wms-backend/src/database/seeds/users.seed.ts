@@ -9,6 +9,7 @@ type SeedUserDef = {
   phone: string;
   fullName: string;
   roleCode: RoleCode;
+  email: string;
 };
 
 const SEED_USERS: SeedUserDef[] = [
@@ -17,18 +18,21 @@ const SEED_USERS: SeedUserDef[] = [
     phone: '0900000001',
     fullName: 'Quản trị viên',
     roleCode: RoleCode.ADMIN,
+    email: 'admin@gmail.com',
   },
   {
     username: 'warehouse@gmail.com',
     phone: '0900000002',
     fullName: 'Nhân viên kho',
     roleCode: RoleCode.WAREHOUSE,
+    email: 'warehouse@gmail.com',
   },
   {
     username: 'manager@gmail.com',
     phone: '0900000003',
     fullName: 'Quản lý',
     roleCode: RoleCode.MANAGER,
+    email: 'manager@gmail.com',
   },
 ];
 
@@ -39,7 +43,11 @@ async function resolveFirebaseUidForSeed(def: SeedUserDef): Promise<string> {
   console.log(
     `[seed] Gọi Firebase Auth (create/get theo SĐT) → lấy firebase_id cho ${def.username}`,
   );
-  const uid = await createOrGetFirebaseUidByPhone(def.phone, def.fullName);
+  const uid = await createOrGetFirebaseUidByPhone(
+    def.phone,
+    def.fullName,
+    def.email,
+  );
   if (!uid) {
     throw new Error(
       `[seed] Không lấy được Firebase uid cho ${def.username}: cấu hình FIREBASE_SERVICE_ACCOUNT_JSON_FILE, ` +

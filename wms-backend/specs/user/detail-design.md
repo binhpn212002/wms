@@ -3,8 +3,8 @@
 ## Tài liệu tham chiếu
 
 - [Kế hoạch triển khai](./plan.md)
-- [Basic design](./basic-design.md)
-- [Auth — basic design](../auth/basic-design.md) (JWT, đăng nhập Firebase — đồng bộ luồng xác thực)
+- [Auth — basic design](../auth/basic-design.md) (Firebase → JWT, guards, route public)
+- [Auth — detail design](../auth/detail-design.md) (endpoint, env, mã lỗi, file nguồn)
 
 ## Phạm vi MVP
 
@@ -13,7 +13,7 @@
 - **Permission**: mã `code` unique dạng `resource.action` (vd. `outbound.complete`, `user.create`), kèm `resource`, `action` để lọc và gắn UI.
 - **Gán quyền**: N-N `user ↔ roles` (`user_roles`), N-N `role ↔ permissions` (`role_permissions`).
 - **Role & permission — không API CRUD (MVP)**: Bảng `roles`, `permissions`, `role_permissions` được **nạp cố định bằng seed** (migration/seed script). Không có endpoint REST tạo/sửa/xóa role hay permission; không gán permission cho role qua API. Cập nhật danh sách role/permission hoặc mapping → **sửa seed + triển khai lại** (hoặc migration dữ liệu), không qua UI/API quản trị trong MVP.
-- **JWT / guard**: payload chứa `userId`, danh sách `roles`, tập `permissions` (flatten từ mọi role của user) — đồng bộ [basic](./basic-design.md).
+- **JWT / guard**: JWT ký chỉ **`{ sub: userId }`**; `roles` và `permissions` (flatten từ mọi role của user) load **từ DB** trong `JwtStrategy.validate` → `request.user` — đồng bộ [auth basic](../auth/basic-design.md).
 - **Bảng `user_permissions`**: **không** bắt buộc MVP; mở rộng khi cần quyền lẻ từng user.
 
 ## Mô hình dữ liệu
@@ -97,7 +97,7 @@
 ## Quy tắc nghiệp vụ
 
 1. **Đăng nhập**: xác thực theo policy (JWT sau khi verify mật khẩu hoặc Firebase token) — chi tiết endpoint [auth basic](../auth/basic-design.md).
-2. **JWT payload**: gồm `sub`/`userId`, `roles` (mã hoặc id), `permissions` (mã permission đủ để `PermissionsGuard` so khớp).
+2. **JWT payload**: **`sub`** = id user; **không** nhét sẵn toàn bộ `roles`/`permissions` vào token (implementation hiện tại). `PermissionsGuard` / `RolesGuard` so khớp trên **`request.user`** sau khi strategy load từ DB.
 3. **Tính tập permission của user**: lấy mọi `role_id` từ `user_roles` → join `role_permissions` → distinct `permission.code`; cache khi issue token hoặc load từ DB mỗi request (trade-off).
 4. **Gán role cho user** (API): chỉ `admin` hoặc permission `user.assign_role` (thống nhất mã permission) — gán/bỏ `role_id` đã tồn tại trong DB (do seed).
 5. **Trạng thái user**: `inactive` → từ chối đăng nhập / refresh token (401/403).
@@ -127,10 +127,13 @@ Base path gợi ý: `/users`, `/auth/...` (prefix `/api/v1`). JSON **camelCase**
 
 ## Guards & decorator (NestJS)
 
-- `JwtAuthGuard` — gắn route cần đăng nhập.
-- `@CurrentUser()` — payload đã verify.
-- `RolesGuard` + `@Roles('admin', …)` — kiểm tra ít nhất một role khớp.
-- `PermissionsGuard` + `@Permissions('outbound.complete', …)` — kiểm tra user có **một trong** hoặc **tất cả** permission (thống nhất một semantics; thường “cần đủ tất cả” hoặc “một trong các” tùy decorator).
+Chi tiết luồng xác thực & route public: [auth basic](../auth/basic-design.md).
+
+- **`JwtAuthGuard`** — `AuthGuard('jwt')`; bắt buộc `Authorization: Bearer <JWT>`. `JwtStrategy` đọc `sub` → `UsersService.getAuthUser` → `request.user` (`AuthUser`: `userId`, `username`, `roles[]`, `permissions[]`).
+- **`PermissionsGuard`** + **`@Permissions('user.create', …)`** — nếu handler/class **không** khai báo permission → cho qua. Nếu có → user phải có **đủ tất cả** mã đã liệt (AND / `every`). Thiếu → 403. Mã dùng **`PermissionCode`** (trùng `permissions.code` từ seed).
+- **`RolesGuard`** + **`@Roles('admin', …)`** — (có sẵn trong `src/common`) nếu dùng: user phải có **ít nhất một** role khớp (`some`). Hiện API user/auth ưu tiên **`@Permissions`**.
+- **`@CurrentUser()`** — đọc field từ `request.user` sau JWT (vd. `@CurrentUser('userId')`).
+- **Route public** — decorator **`@Public()`** trên handler/class: `JwtAuthGuard` bỏ qua JWT; dùng cho `POST /auth/firebase` và khi bật JWT global — xem [auth basic](../auth/basic-design.md).
 
 ## Mã lỗi & HTTP (gợi ý)
 

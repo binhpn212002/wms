@@ -1,5 +1,6 @@
 import * as admin from 'firebase-admin';
 import { loadFirebaseServiceAccountJson } from '../../config/firebase-service-account.util';
+import { toE164VN } from '../../common/utils/phone-normalize.util';
 
 /** Tránh trùng init khi seed chạy trong cùng process với app Nest (đã có Firebase app). */
 export function tryInitFirebaseAdminForSeed(): boolean {
@@ -23,18 +24,6 @@ export function tryInitFirebaseAdminForSeed(): boolean {
   }
 }
 
-/** SĐT nội địa (vd. 090…) → E.164 cho Firebase */
-export function toE164VN(phone: string): string {
-  const digits = phone.replace(/\D/g, '');
-  if (digits.startsWith('84')) {
-    return `+${digits}`;
-  }
-  if (digits.startsWith('0')) {
-    return `+84${digits.slice(1)}`;
-  }
-  return `+84${digits}`;
-}
-
 /**
  * Tạo user Firebase Auth theo SĐT (Admin SDK) hoặc lấy uid thật nếu SĐT đã đăng ký.
  * Trả null nếu không cấu hình Firebase Admin (thiếu JSON / init lỗi).
@@ -42,15 +31,18 @@ export function toE164VN(phone: string): string {
 export async function createOrGetFirebaseUidByPhone(
   phoneLocal: string,
   displayName: string,
+  email: string,
 ): Promise<string | null> {
   if (!tryInitFirebaseAdminForSeed()) {
     return null;
   }
   const phoneE164 = toE164VN(phoneLocal);
+  console.log('phoneE164', phoneE164);
   try {
     const user = await admin.auth().createUser({
-      phoneNumber: phoneE164,
-      displayName,
+      email: email,
+      displayName: displayName,
+      password: phoneLocal,
     });
     console.log(
       `[seed] Firebase Auth: created ${phoneE164} → uid=${user.uid}`,

@@ -5,6 +5,7 @@ import { CreateUserDto } from '../../user/dto/create-user.dto';
 import { UserResponseDto } from '../../user/dto/user-response.dto';
 import { UsersService } from '../../user/services/users.service';
 import { FirebaseLoginDto } from '../dto/firebase-login.dto';
+import { LoginDto } from '../dto/login.dto';
 import { FirebaseAdminService } from './firebase-admin.service';
 
 @Injectable()
@@ -15,20 +16,23 @@ export class AuthService {
     private readonly firebaseAdmin: FirebaseAdminService,
   ) {}
 
-  async loginWithFirebase(dto: FirebaseLoginDto): Promise<{
+
+
+  /** Username + password: BE gọi Firebase Identity Toolkit (Email/Password) → idToken → JWT. */
+  async login(dto: LoginDto): Promise<{
     accessToken: string;
-    user: AuthUser;
+    refreshToken: string;
   }> {
-    const decoded = await this.firebaseAdmin.verifyIdToken(dto.idToken);
-    const user = await this.usersService.resolveUserForFirebaseLogin(
-      decoded.uid,
-      decoded,
+    const email = await this.usersService.resolveEmailForPasswordLogin(
+      dto.username,
     );
-    const authUser = this.usersService.toAuthUser(user);
-    const accessToken = await this.jwtService.signAsync({
-      sub: user.id,
-    });
-    return { accessToken, user: authUser };
+    const data = await this.firebaseAdmin.signInWithEmailAndPassword(
+      email,
+      dto.password,
+    );
+   
+  
+    return { accessToken: data.idToken ?? ''  , refreshToken: data.refreshToken ?? '' };
   }
 
   async register(dto: CreateUserDto): Promise<UserResponseDto> {

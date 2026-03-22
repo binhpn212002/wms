@@ -1,5 +1,5 @@
 /**
- * Gắn vào `request.user` sau JwtStrategy.validate (và login response).
+ * Gắn vào `request.user` sau JwtAuthGuard (Firebase ID token) / login response.
  */
 export interface AuthUser {
   userId: string;

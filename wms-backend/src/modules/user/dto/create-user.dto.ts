@@ -28,18 +28,6 @@ export class CreateUserDto {
   @MaxLength(32)
   phone: string;
 
-  @ApiPropertyOptional({
-    description:
-      'UID Firebase — gán khi tạo user để đăng nhập bằng ID token (không lưu mật khẩu trên server)',
-  })
-  @Transform(({ value }) =>
-    typeof value === 'string' ? value.trim() : value,
-  )
-  @IsOptional()
-  @IsString()
-  @MaxLength(128)
-  firebaseId?: string;
-
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
