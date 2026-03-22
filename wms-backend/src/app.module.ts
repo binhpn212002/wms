@@ -5,6 +5,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import appConfig from './config/app.config';
 import databaseConfig from './config/database.config';
+import firebaseConfig from './config/firebase.config';
+import jwtConfig from './config/jwt.config';
 import redisConfig from './config/redis.config';
 import { AttributeValuesModule } from './modules/attribute-values/attribute-values.module';
 import { AttributesModule } from './modules/attributes/attributes.module';
@@ -16,12 +18,14 @@ import { InboundModule } from './modules/inbound/inbound.module';
 import { OutboundModule } from './modules/outbound/outbound.module';
 import { InventoryModule } from './modules/inventory/inventory.module';
 import { WarehousesModule } from './modules/warehouses/warehouses.module';
+import { UserModule } from './modules/user/user.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [appConfig, databaseConfig, redisConfig],
+      load: [appConfig, databaseConfig, redisConfig, jwtConfig, firebaseConfig],
       envFilePath: ['.env.local', '.env'],
     }),
     TypeOrmModule.forRootAsync({
@@ -52,6 +56,8 @@ import { WarehousesModule } from './modules/warehouses/warehouses.module';
     InboundModule,
     OutboundModule,
     WarehousesModule,
+    UserModule,
+    AuthModule,
     // RedisModule,
   ],
   controllers: [AppController],

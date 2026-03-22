@@ -80,6 +80,16 @@ export const ErrorCode = {
   OUTBOUND_CANNOT_MODIFY_COMPLETED: 'OUTBOUND_CANNOT_MODIFY_COMPLETED',
   OUTBOUND_NO_LINES: 'OUTBOUND_NO_LINES',
   OUTBOUND_WAREHOUSE_INACTIVE: 'OUTBOUND_WAREHOUSE_INACTIVE',
+
+  // User / Auth
+  USER_NOT_FOUND: 'USER_NOT_FOUND',
+  USER_USERNAME_DUPLICATE: 'USER_USERNAME_DUPLICATE',
+  USER_PHONE_DUPLICATE: 'USER_PHONE_DUPLICATE',
+  USER_INACTIVE: 'USER_INACTIVE',
+  USER_ROLE_NOT_FOUND: 'USER_ROLE_NOT_FOUND',
+  USER_FIREBASE_ID_DUPLICATE: 'USER_FIREBASE_ID_DUPLICATE',
+  AUTH_INVALID_CREDENTIALS: 'AUTH_INVALID_CREDENTIALS',
+  AUTH_FIREBASE_NOT_CONFIGURED: 'AUTH_FIREBASE_NOT_CONFIGURED',
 } as const;
 
 export type ErrorCodeValue = (typeof ErrorCode)[keyof typeof ErrorCode];
@@ -177,4 +187,15 @@ export const ERROR_MESSAGE: Record<ErrorCodeValue, string> = {
   [ErrorCode.OUTBOUND_NO_LINES]: 'Phiếu xuất chưa có dòng hàng',
   [ErrorCode.OUTBOUND_WAREHOUSE_INACTIVE]:
     'Kho không hoạt động — không thể chọn cho phiếu xuất mới',
+
+  [ErrorCode.USER_NOT_FOUND]: 'Không tìm thấy người dùng',
+  [ErrorCode.USER_USERNAME_DUPLICATE]: 'Tên đăng nhập đã tồn tại',
+  [ErrorCode.USER_PHONE_DUPLICATE]: 'Số điện thoại đã tồn tại',
+  [ErrorCode.USER_INACTIVE]: 'Tài khoản đã bị vô hiệu hóa',
+  [ErrorCode.USER_ROLE_NOT_FOUND]: 'Vai trò không tồn tại',
+  [ErrorCode.USER_FIREBASE_ID_DUPLICATE]: 'UID Firebase đã được gán cho người dùng khác',
+  [ErrorCode.AUTH_INVALID_CREDENTIALS]:
+    'Token không hợp lệ hoặc tài khoản chưa được đăng ký',
+  [ErrorCode.AUTH_FIREBASE_NOT_CONFIGURED]:
+    'Chưa cấu hình Firebase Admin (FIREBASE_SERVICE_ACCOUNT_JSON)',
 };
