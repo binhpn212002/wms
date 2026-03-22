@@ -1,32 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import { DataSource, QueryFailedError } from 'typeorm';
 import {
   AttributeCodeDuplicateException,
   AttributeHasValuesException,
   AttributeNotFoundException,
 } from '../../../common/exceptions/attribute.exceptions';
 import { ListResponseDto } from '../../../common/dto/list-response.dto';
-import { Attribute } from '../../../database/entities/attribute.entity';
 import { AttributeResponseDto } from '../dto/attribute-response.dto';
 import { CreateAttributeDto } from '../dto/create-attribute.dto';
 import { ListAttributesQueryDto } from '../dto/list-attributes-query.dto';
 import { UpdateAttributeDto } from '../dto/update-attribute.dto';
 import { AttributesRepository } from '../repositories/attributes.repository';
 
-function isPgUniqueViolation(err: unknown): boolean {
-  return (
-    err instanceof QueryFailedError &&
-    (err as QueryFailedError & { driverError?: { code?: string } }).driverError
-      ?.code === '23505'
-  );
-}
-
 @Injectable()
 export class AttributesService {
-  constructor(
-    private readonly attributesRepo: AttributesRepository,
-    private readonly dataSource: DataSource,
-  ) {}
+  constructor(private readonly attributesRepo: AttributesRepository) {}
 
   async list(
     query: ListAttributesQueryDto,
@@ -59,60 +46,44 @@ export class AttributesService {
   async create(dto: CreateAttributeDto): Promise<AttributeResponseDto> {
     const code = dto.code.trim();
     const name = dto.name.trim();
-    return await this.dataSource.transaction(async (manager) => {
-      const repo = manager.getRepository(Attribute);
-      const entity = repo.create({
-        code,
-        name,
-        sortOrder: dto.sort_order ?? null,
-        active: dto.active ?? true,
-      });
-      let saved: Attribute;
-      try {
-        saved = await repo.save(entity);
-      } catch (e) {
-        if (isPgUniqueViolation(e)) {
-          throw new AttributeCodeDuplicateException();
-        }
-        throw e;
-      }
-      return AttributeResponseDto.fromEntity(saved);
+    if (await this.attributesRepo.existsActiveByCode(code)) {
+      throw new AttributeCodeDuplicateException();
+    }
+    const saved = await this.attributesRepo.createAndSave({
+      code,
+      name,
+      sortOrder: dto.sort_order ?? null,
+      active: dto.active ?? true,
     });
+    return AttributeResponseDto.fromEntity(saved);
   }
 
   async update(
     id: string,
     dto: UpdateAttributeDto,
   ): Promise<AttributeResponseDto> {
-    return await this.dataSource.transaction(async (manager) => {
-      const repo = manager.getRepository(Attribute);
-      const entity = await repo.findOne({ where: { id } });
-      if (!entity) {
-        throw new AttributeNotFoundException();
+    const entity = await this.attributesRepo.findById(id);
+    if (!entity) {
+      throw new AttributeNotFoundException();
+    }
+    if (dto.code !== undefined) {
+      const nextCode = dto.code.trim();
+      if (await this.attributesRepo.existsActiveByCode(nextCode, id)) {
+        throw new AttributeCodeDuplicateException();
       }
-      if (dto.code !== undefined) {
-        entity.code = dto.code.trim();
-      }
-      if (dto.name !== undefined) {
-        entity.name = dto.name.trim();
-      }
-      if (dto.sort_order !== undefined) {
-        entity.sortOrder = dto.sort_order;
-      }
-      if (dto.active !== undefined) {
-        entity.active = dto.active;
-      }
-      let saved: Attribute;
-      try {
-        saved = await repo.save(entity);
-      } catch (e) {
-        if (isPgUniqueViolation(e)) {
-          throw new AttributeCodeDuplicateException();
-        }
-        throw e;
-      }
-      return AttributeResponseDto.fromEntity(saved);
-    });
+      entity.code = nextCode;
+    }
+    if (dto.name !== undefined) {
+      entity.name = dto.name.trim();
+    }
+    if (dto.sort_order !== undefined) {
+      entity.sortOrder = dto.sort_order;
+    }
+    if (dto.active !== undefined) {
+      entity.active = dto.active;
+    }
+    const saved = await this.attributesRepo.save(entity);
+    return AttributeResponseDto.fromEntity(saved);
   }
 
   async remove(id: string): Promise<void> {

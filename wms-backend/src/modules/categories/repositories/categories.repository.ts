@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, Not, Repository } from 'typeorm';
 import { ListResponseDto } from '../../../common/dto/list-response.dto';
 import { BaseRepository } from '../../../common/repositories/base.repository';
 import { Category } from '../../../database/entities/category.entity';
@@ -23,6 +23,14 @@ export class CategoriesRepository extends BaseRepository<Category> {
       where: { id },
       withDeleted: options?.withDeleted === true,
     });
+  }
+
+  /** Bản ghi chưa xóa mềm đã trùng `code` (bỏ qua `excludeId` khi PATCH). */
+  existsActiveByCode(code: string, excludeId?: string): Promise<boolean> {
+    const where: FindOptionsWhere<Category> = excludeId
+      ? { code, id: Not(excludeId) }
+      : { code };
+    return this.repository.existsBy(where);
   }
 
   async findManyWithFilters(

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, Not, Repository } from 'typeorm';
 import { ListResponseDto } from '../../../common/dto/list-response.dto';
 import { BaseRepository } from '../../../common/repositories/base.repository';
 import { Attribute } from '../../../database/entities/attribute.entity';
@@ -23,6 +23,16 @@ export class AttributesRepository extends BaseRepository<Attribute> {
       where: { id },
       withDeleted: options?.withDeleted === true,
     });
+  }
+
+  /**
+   * Đã có bản ghi **chưa xóa mềm** trùng `code` (không tính `excludeId` — dùng khi PATCH).
+   */
+  existsActiveByCode(code: string, excludeId?: string): Promise<boolean> {
+    const where: FindOptionsWhere<Attribute> = excludeId
+      ? { code, id: Not(excludeId) }
+      : { code };
+    return this.repository.existsBy(where);
   }
 
   async findManyWithFilters(

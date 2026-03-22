@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DataSource, QueryFailedError } from 'typeorm';
+import { DataSource } from 'typeorm';
 import {
   CategoryCodeDuplicateException,
   CategoryHasChildrenException,
@@ -17,14 +17,6 @@ import { TreeCategoriesQueryDto } from '../dto/tree-categories-query.dto';
 import { UpdateCategoryDto } from '../dto/update-category.dto';
 import { CategoriesRepository } from '../repositories/categories.repository';
 import { CategoryClosureService } from './category-closure.service';
-
-function isPgUniqueViolation(err: unknown): boolean {
-  return (
-    err instanceof QueryFailedError &&
-    (err as QueryFailedError & { driverError?: { code?: string } }).driverError
-      ?.code === '23505'
-  );
-}
 
 export interface CategoryTreeNode {
   id: string;
@@ -121,6 +113,9 @@ export class CategoriesService {
   async create(dto: CreateCategoryDto): Promise<CategoryResponseDto> {
     const code = dto.code.trim();
     const name = dto.name.trim();
+    if (await this.categoriesRepo.existsActiveByCode(code)) {
+      throw new CategoryCodeDuplicateException();
+    }
     return await this.dataSource.transaction(async (manager) => {
       const repo = manager.getRepository(Category);
       if (dto.parent_id) {
@@ -135,15 +130,7 @@ export class CategoriesService {
         parentId: dto.parent_id ?? null,
         active: dto.active ?? true,
       });
-      let saved: Category;
-      try {
-        saved = await repo.save(entity);
-      } catch (e) {
-        if (isPgUniqueViolation(e)) {
-          throw new CategoryCodeDuplicateException();
-        }
-        throw e;
-      }
+      const saved = await repo.save(entity);
       await this.categoryClosureService.rebuildWithManager(manager);
       return CategoryResponseDto.fromEntity(saved);
     });
@@ -153,6 +140,12 @@ export class CategoriesService {
     id: string,
     dto: UpdateCategoryDto,
   ): Promise<CategoryResponseDto> {
+    if (dto.code !== undefined) {
+      const nextCode = dto.code.trim();
+      if (await this.categoriesRepo.existsActiveByCode(nextCode, id)) {
+        throw new CategoryCodeDuplicateException();
+      }
+    }
     return await this.dataSource.transaction(async (manager) => {
       const repo = manager.getRepository(Category);
       const entity = await repo.findOne({ where: { id } });
@@ -184,15 +177,7 @@ export class CategoriesService {
       if (dto.active !== undefined) {
         entity.active = dto.active;
       }
-      let saved: Category;
-      try {
-        saved = await repo.save(entity);
-      } catch (e) {
-        if (isPgUniqueViolation(e)) {
-          throw new CategoryCodeDuplicateException();
-        }
-        throw e;
-      }
+      const saved = await repo.save(entity);
       await this.categoryClosureService.rebuildWithManager(manager);
       return CategoryResponseDto.fromEntity(saved);
     });
