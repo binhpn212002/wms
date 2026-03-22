@@ -30,6 +30,6 @@ import { InventoryService } from './services/inventory.service';
     StockBalancesRepository,
     InventoryMovementsRepository,
   ],
-  exports: [InventoryService, InventoryStockService],
+  exports: [InventoryService, InventoryStockService, StockBalancesRepository],
 })
 export class InventoryModule {}

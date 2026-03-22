@@ -47,9 +47,21 @@ export const ErrorCode = {
 
   // Inventory
   INSUFFICIENT_STOCK: 'INSUFFICIENT_STOCK',
+  ONLY_BIN_FOR_STOCK: 'ONLY_BIN_FOR_STOCK',
   LOCATION_WAREHOUSE_MISMATCH: 'LOCATION_WAREHOUSE_MISMATCH',
   WAREHOUSE_NOT_FOUND: 'WAREHOUSE_NOT_FOUND',
   LOCATION_NOT_FOUND: 'LOCATION_NOT_FOUND',
+  WAREHOUSE_CODE_DUPLICATE: 'WAREHOUSE_CODE_DUPLICATE',
+  LOCATION_CODE_DUPLICATE: 'LOCATION_CODE_DUPLICATE',
+  LOCATION_HAS_CHILDREN: 'LOCATION_HAS_CHILDREN',
+  LOCATION_HAS_STOCK: 'LOCATION_HAS_STOCK',
+  LOCATION_IS_DEFAULT_FOR_WAREHOUSE: 'LOCATION_IS_DEFAULT_FOR_WAREHOUSE',
+  WAREHOUSE_HAS_STOCK: 'WAREHOUSE_HAS_STOCK',
+  INVALID_LOCATION_TYPE: 'INVALID_LOCATION_TYPE',
+  LOCATION_PARENT_INVALID: 'LOCATION_PARENT_INVALID',
+  LOCATION_PARENT_CYCLE: 'LOCATION_PARENT_CYCLE',
+  LOCATION_SUBTREE_HAS_STOCK: 'LOCATION_SUBTREE_HAS_STOCK',
+  DEFAULT_LOCATION_MUST_BE_BIN: 'DEFAULT_LOCATION_MUST_BE_BIN',
 } as const;
 
 export type ErrorCodeValue = (typeof ErrorCode)[keyof typeof ErrorCode];
@@ -103,7 +115,25 @@ export const ERROR_MESSAGE: Record<ErrorCodeValue, string> = {
   [ErrorCode.SUPPLIER_CONTACT_NOT_FOUND]: 'Không tìm thấy liên hệ',
 
   [ErrorCode.INSUFFICIENT_STOCK]: 'Không đủ tồn kho tại kho/vị trí',
+  [ErrorCode.ONLY_BIN_FOR_STOCK]: 'Chỉ được ghi tồn kho tại vị trí loại bin',
   [ErrorCode.LOCATION_WAREHOUSE_MISMATCH]: 'Vị trí không thuộc kho đã chọn',
   [ErrorCode.WAREHOUSE_NOT_FOUND]: 'Không tìm thấy kho',
   [ErrorCode.LOCATION_NOT_FOUND]: 'Không tìm thấy vị trí',
+  [ErrorCode.WAREHOUSE_CODE_DUPLICATE]: 'Mã kho đã tồn tại',
+  [ErrorCode.LOCATION_CODE_DUPLICATE]: 'Mã vị trí đã tồn tại trong kho này',
+  [ErrorCode.LOCATION_HAS_CHILDREN]: 'Không thể xóa khi còn vị trí con',
+  [ErrorCode.LOCATION_HAS_STOCK]: 'Không thể xóa khi vị trí còn tồn kho',
+  [ErrorCode.LOCATION_IS_DEFAULT_FOR_WAREHOUSE]:
+    'Không thể xóa vị trí đang là ô mặc định của kho — hãy đổi default trước',
+  [ErrorCode.WAREHOUSE_HAS_STOCK]: 'Không thể xóa kho khi còn tồn kho',
+  [ErrorCode.INVALID_LOCATION_TYPE]:
+    'Loại vị trí không hợp lệ (zone / rack / bin)',
+  [ErrorCode.LOCATION_PARENT_INVALID]:
+    'Vị trí cha không tồn tại, không cùng kho hoặc đã bị xóa',
+  [ErrorCode.LOCATION_PARENT_CYCLE]:
+    'Không thể đặt cha tạo chu trình trong cây vị trí',
+  [ErrorCode.LOCATION_SUBTREE_HAS_STOCK]:
+    'Không thể thay đổi khi cây con còn tồn kho',
+  [ErrorCode.DEFAULT_LOCATION_MUST_BE_BIN]:
+    'Ô mặc định phải thuộc kho và có loại bin',
 };

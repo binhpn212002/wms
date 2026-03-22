@@ -14,6 +14,15 @@ export class InsufficientStockException extends ConflictException {
   }
 }
 
+export class OnlyBinForStockException extends UnprocessableEntityException {
+  constructor() {
+    super({
+      code: ErrorCode.ONLY_BIN_FOR_STOCK,
+      message: ERROR_MESSAGE[ErrorCode.ONLY_BIN_FOR_STOCK],
+    });
+  }
+}
+
 export class LocationWarehouseMismatchException extends UnprocessableEntityException {
   constructor() {
     super({

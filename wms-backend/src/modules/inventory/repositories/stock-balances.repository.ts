@@ -209,4 +209,36 @@ export class StockBalancesRepository extends BaseRepository<StockBalance> {
 
     return ListResponseDto.create(items, total, query.page, query.limit);
   }
+
+  /** Có ít nhất một dòng tồn > 0 tại ô. */
+  existsPositiveQuantityAtLocation(locationId: string): Promise<boolean> {
+    return this.repository
+      .createQueryBuilder('sb')
+      .where('sb.locationId = :locationId', { locationId })
+      .andWhere('CAST(sb.quantity AS DECIMAL) > 0')
+      .getExists();
+  }
+
+  /** Có tồn > 0 tại bất kỳ ô nào trong danh sách. */
+  existsPositiveQuantityAtAnyLocations(
+    locationIds: string[],
+  ): Promise<boolean> {
+    if (locationIds.length === 0) {
+      return Promise.resolve(false);
+    }
+    return this.repository
+      .createQueryBuilder('sb')
+      .where('sb.locationId IN (:...ids)', { ids: locationIds })
+      .andWhere('CAST(sb.quantity AS DECIMAL) > 0')
+      .getExists();
+  }
+
+  /** Có tồn > 0 tại bất kỳ ô nào trong kho. */
+  existsPositiveQuantityInWarehouse(warehouseId: string): Promise<boolean> {
+    return this.repository
+      .createQueryBuilder('sb')
+      .where('sb.warehouseId = :warehouseId', { warehouseId })
+      .andWhere('CAST(sb.quantity AS DECIMAL) > 0')
+      .getExists();
+  }
 }

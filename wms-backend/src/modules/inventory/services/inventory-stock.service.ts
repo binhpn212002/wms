@@ -4,10 +4,12 @@ import {
   InventoryMovementType,
   InventoryReferenceType,
 } from '../../../common/constants/inventory.constant';
+import { LocationType } from '../../../common/constants/inventory.constant';
 import {
   InsufficientStockException,
   LocationNotFoundException,
   LocationWarehouseMismatchException,
+  OnlyBinForStockException,
 } from '../../../common/exceptions/inventory.exceptions';
 import { VariantNotFoundException } from '../../../common/exceptions/product.exceptions';
 import { InventoryMovement } from '../../../database/entities/inventory-movement.entity';
@@ -81,6 +83,9 @@ export class InventoryStockService {
       }
       if (location.warehouseId !== input.warehouseId) {
         throw new LocationWarehouseMismatchException();
+      }
+      if (location.type !== LocationType.BIN) {
+        throw new OnlyBinForStockException();
       }
 
       const delta = parseFloat(input.quantityDelta);
