@@ -1,11 +1,13 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-  UnprocessableEntityException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { DataSource, QueryFailedError } from 'typeorm';
-import { CategoryErrorCode } from '../../../common/constants/categories.constant';
+import {
+  CategoryCodeDuplicateException,
+  CategoryHasChildrenException,
+  CategoryHasProductsException,
+  CategoryNotFoundException,
+  CategoryParentCycleException,
+  CategoryParentInvalidException,
+} from '../../../common/exceptions/category.exceptions';
 import { ListResponseDto } from '../../../common/dto/list-response.dto';
 import { Category } from '../../../database/entities/category.entity';
 import { CategoryResponseDto } from '../dto/category-response.dto';
@@ -108,16 +110,10 @@ export class CategoriesService {
       withDeleted: includeDeleted,
     });
     if (!entity) {
-      throw new NotFoundException({
-        code: 'CATEGORY_NOT_FOUND',
-        message: 'Không tìm thấy danh mục',
-      });
+      throw new CategoryNotFoundException();
     }
     if (!includeDeleted && entity.deletedAt) {
-      throw new NotFoundException({
-        code: 'CATEGORY_NOT_FOUND',
-        message: 'Không tìm thấy danh mục',
-      });
+      throw new CategoryNotFoundException();
     }
     return CategoryResponseDto.fromEntity(entity);
   }
@@ -130,10 +126,7 @@ export class CategoriesService {
       if (dto.parent_id) {
         const p = await repo.findOne({ where: { id: dto.parent_id } });
         if (!p) {
-          throw new UnprocessableEntityException({
-            code: CategoryErrorCode.PARENT_INVALID,
-            message: 'Danh mục cha không tồn tại hoặc đã bị xóa',
-          });
+          throw new CategoryParentInvalidException();
         }
       }
       const entity = repo.create({
@@ -147,10 +140,7 @@ export class CategoriesService {
         saved = await repo.save(entity);
       } catch (e) {
         if (isPgUniqueViolation(e)) {
-          throw new ConflictException({
-            code: CategoryErrorCode.CODE_DUPLICATE,
-            message: 'Mã danh mục đã tồn tại',
-          });
+          throw new CategoryCodeDuplicateException();
         }
         throw e;
       }
@@ -167,29 +157,19 @@ export class CategoriesService {
       const repo = manager.getRepository(Category);
       const entity = await repo.findOne({ where: { id } });
       if (!entity) {
-        throw new NotFoundException({
-          code: 'CATEGORY_NOT_FOUND',
-          message: 'Không tìm thấy danh mục',
-        });
+        throw new CategoryNotFoundException();
       }
       const nextParentId =
         dto.parent_id !== undefined ? dto.parent_id : entity.parentId;
       if (nextParentId) {
         const p = await repo.findOne({ where: { id: nextParentId } });
         if (!p) {
-          throw new UnprocessableEntityException({
-            code: CategoryErrorCode.PARENT_INVALID,
-            message: 'Danh mục cha không tồn tại hoặc đã bị xóa',
-          });
+          throw new CategoryParentInvalidException();
         }
         const descendants =
           await this.categoryClosureService.getDescendantIds(id);
         if (nextParentId === id || descendants.has(nextParentId)) {
-          throw new UnprocessableEntityException({
-            code: CategoryErrorCode.PARENT_CYCLE,
-            message:
-              'Không thể đặt cha là chính danh mục hoặc một danh mục con của nó',
-          });
+          throw new CategoryParentCycleException();
         }
       }
       if (dto.code !== undefined) {
@@ -209,10 +189,7 @@ export class CategoriesService {
         saved = await repo.save(entity);
       } catch (e) {
         if (isPgUniqueViolation(e)) {
-          throw new ConflictException({
-            code: CategoryErrorCode.CODE_DUPLICATE,
-            message: 'Mã danh mục đã tồn tại',
-          });
+          throw new CategoryCodeDuplicateException();
         }
         throw e;
       }
@@ -226,27 +203,18 @@ export class CategoriesService {
       withDeleted: true,
     });
     if (!entity) {
-      throw new NotFoundException({
-        code: 'CATEGORY_NOT_FOUND',
-        message: 'Không tìm thấy danh mục',
-      });
+      throw new CategoryNotFoundException();
     }
     if (entity.deletedAt) {
       return;
     }
     const childCount = await this.categoriesRepo.countDirectChildren(id);
     if (childCount > 0) {
-      throw new ConflictException({
-        code: CategoryErrorCode.HAS_CHILDREN,
-        message: 'Không thể xóa khi còn danh mục con',
-      });
+      throw new CategoryHasChildrenException();
     }
     const productCount = await this.countProductsByCategoryId(id);
     if (productCount > 0) {
-      throw new ConflictException({
-        code: CategoryErrorCode.HAS_PRODUCTS,
-        message: 'Không thể xóa khi còn sản phẩm tham chiếu',
-      });
+      throw new CategoryHasProductsException();
     }
     await this.dataSource.transaction(async (manager) => {
       await manager.softDelete(Category, { id });

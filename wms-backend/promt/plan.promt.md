@@ -18,7 +18,7 @@
 │   │   ├── utils/
 │   │   ├── constants/
 │   │   │   └── module.constant.ts   # <--- Thêm file constants/module.constant.ts cho các hằng số liên quan module (ví dụ: tên bảng, enum, v.v)
-│   │   ├── exception/
+│   │   ├── exceptions/
 │   │   └── repositories/  # Thư mục dùng để chứa baseRepository dùng chung cho cả dự án
 │   ├── config/            # Cấu hình hệ thống & môi trường
 │   │   ├── database.config.ts
