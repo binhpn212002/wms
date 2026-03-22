@@ -11,7 +11,7 @@
 
 ## 2. Mục tiêu theo MVP (detail-design)
 
-- Bảng `attributes`: `code`, `name`, `sort_order` (nullable), `active`, soft delete `deleted_at`, audit.
+- Bảng `attributes`: `code`, `name`, `sort` (nullable), `active`, soft delete `deleted_at`, audit.
 - Unique partial `code` khi `deleted_at IS NULL` (migration Postgres).
 - API: list (phân trang + lọc `q`, `active`, `includeDeleted`, `sort`), get by id, POST, PATCH, DELETE (soft).
 - Quy tắc: trim/chuẩn hoá `code`; xóa mềm **chặn** khi còn bản ghi `attribute_values` thuộc attribute (sau khi submodule attribute-values có entity/migration); khi đã có Product/variant map qua value — kiểm tra thêm ở tầng value hoặc service (xem detail-design).
@@ -49,7 +49,7 @@ src/
 
 **Ghi chú căn chỉnh codebase hiện tại**
 
-- Entity kế thừa `shared/base.entity.ts` (`id`, `createdAt`, `updatedAt`); map cột DB `sort_order`, `deleted_at`, … qua `@Column({ name: '...' })` nếu property camelCase.
+- Entity kế thừa `shared/base.entity.ts` (`id`, `createdAt`, `updatedAt`); map cột DB `sort`, `deleted_at`, … qua `@Column({ name: '...' })` nếu property camelCase.
 - Dùng `common/dto/page-option.dto.ts` + `list-response.dto.ts` cho list; query DTO bổ sung `q`, `active`, `includeDeleted`, `sort`.
 - Đăng ký `AttributesModule` trong `app.module.ts` và `TypeOrmModule.forFeature([Attribute])`.
 - Submodule **attribute-values** (sau này): FK `attribute_values.attribute_id` → `attributes.id`; controller tách route `/master-data/attributes/:attributeId/values` — không nhét trong cùng file controller nếu team muốn module riêng (có thể `attribute-values` module + forward hoặc nested controller).

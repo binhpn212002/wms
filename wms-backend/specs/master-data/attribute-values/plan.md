@@ -12,7 +12,7 @@
 
 ## 2. Mục tiêu theo MVP (detail-design)
 
-- Bảng `attribute_values`: `attribute_id` (FK), `code`, `name`, `sort_order` (nullable), `active`, soft delete `deleted_at`, audit.
+- Bảng `attribute_values`: `attribute_id` (FK), `code`, `name`, (nullable), `active`, soft delete `deleted_at`, audit.
 - Unique partial `(attribute_id, code)` khi `deleted_at IS NULL` (migration Postgres).
 - API: list theo attribute (phân trang + lọc `q`, `active`, `includeDeleted`, `sort`), get by id, POST, PATCH, DELETE (soft).
 - Quy tắc: trim/chuẩn hoá `code` trong phạm vi `attribute_id`; validate attribute tồn tại và chưa xóa mềm (trừ policy admin); `id` trong URL phải thuộc đúng `:attributeId`.

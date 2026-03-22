@@ -20,6 +20,11 @@ export const ErrorCode = {
   ATTRIBUTE_VALUE_NOT_FOUND: 'ATTRIBUTE_VALUE_NOT_FOUND',
   ATTRIBUTE_VALUE_CODE_DUPLICATE: 'ATTRIBUTE_VALUE_CODE_DUPLICATE',
   ATTRIBUTE_VALUE_IN_USE: 'ATTRIBUTE_VALUE_IN_USE',
+
+  // Unit (UoM)
+  UNIT_NOT_FOUND: 'UNIT_NOT_FOUND',
+  UNIT_CODE_DUPLICATE: 'UNIT_CODE_DUPLICATE',
+  UNIT_IN_USE: 'UNIT_IN_USE',
 } as const;
 
 export type ErrorCodeValue = (typeof ErrorCode)[keyof typeof ErrorCode];
@@ -46,4 +51,9 @@ export const ERROR_MESSAGE: Record<ErrorCodeValue, string> = {
     'Mã giá trị đã tồn tại trong thuộc tính này',
   [ErrorCode.ATTRIBUTE_VALUE_IN_USE]:
     'Không thể xóa khi giá trị đang được biến thể/SKU tham chiếu',
+
+  [ErrorCode.UNIT_NOT_FOUND]: 'Không tìm thấy đơn vị tính',
+  [ErrorCode.UNIT_CODE_DUPLICATE]: 'Mã đơn vị tính đã tồn tại',
+  [ErrorCode.UNIT_IN_USE]:
+    'Không thể xóa khi còn sản phẩm hoặc chứng từ tham chiếu đơn vị này',
 };

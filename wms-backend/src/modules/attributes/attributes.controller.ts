@@ -17,6 +17,7 @@ import { GetAttributeQueryDto } from './dto/get-attribute-query.dto';
 import { ListAttributesQueryDto } from './dto/list-attributes-query.dto';
 import { UpdateAttributeDto } from './dto/update-attribute.dto';
 import { AttributesService } from './services/attributes.service';
+import { SortOrder } from 'src/common/dto/page-option.dto';
 
 @ApiTags('master-data / attributes')
 @Controller('master-data/attributes')
@@ -33,7 +34,7 @@ export class AttributesController {
   @ApiQuery({
     name: 'sort',
     required: false,
-    enum: ['sort_order', 'code', 'name', 'created_at'],
+    enum: SortOrder,
   })
   list(@Query() query: ListAttributesQueryDto) {
     return this.attributesService.list(query);

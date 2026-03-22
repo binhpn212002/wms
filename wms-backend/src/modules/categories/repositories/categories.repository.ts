@@ -5,6 +5,7 @@ import { ListResponseDto } from '../../../common/dto/list-response.dto';
 import { BaseRepository } from '../../../common/repositories/base.repository';
 import { Category } from '../../../database/entities/category.entity';
 import { ListCategoriesQueryDto } from '../dto/list-categories-query.dto';
+import { SortOrder } from 'src/common/dto/page-option.dto';
 
 @Injectable()
 export class CategoriesRepository extends BaseRepository<Category> {
@@ -57,14 +58,9 @@ export class CategoriesRepository extends BaseRepository<Category> {
         qb.andWhere('c.parentId = :parentId', { parentId: query.parent_id });
       }
     }
-    const sort = query.sort ?? 'code';
-    if (sort === 'name') {
-      qb.orderBy('c.name', 'ASC');
-    } else if (sort === 'created_at') {
-      qb.orderBy('c.createdAt', 'ASC');
-    } else {
-      qb.orderBy('c.code', 'ASC');
-    }
+    if (query.sort !== undefined) {
+      qb.orderBy('c.id', query.sort === SortOrder.ASC ? 'ASC' : 'DESC');
+    } 
     qb.skip(query.skip).take(query.limit);
     const [data, total] = await qb.getManyAndCount();
     return ListResponseDto.create(data, total, query.page, query.limit);

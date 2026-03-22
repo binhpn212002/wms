@@ -6,7 +6,7 @@ Giá trị cụ thể thuộc một **attribute**: `S`, `M`, `L`, `Đỏ`, `Xanh
 
 ## MVP
 
-- Trường gợi ý: `attribute_id` (FK), `code`, `name` (hiển thị), `sort_order`, `active`.
+- Trường gợi ý: `attribute_id` (FK), `code`, `name` (hiển thị), `active`.
 - `code` có thể unique trong phạm vi `(attribute_id)` — ví dụ cùng mã `RED` cho màu nhưng khác attribute.
 
 ## Quy tắc

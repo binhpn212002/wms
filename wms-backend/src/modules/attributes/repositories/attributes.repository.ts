@@ -6,6 +6,7 @@ import { BaseRepository } from '../../../common/repositories/base.repository';
 import { AttributeValue } from '../../../database/entities/attribute-value.entity';
 import { Attribute } from '../../../database/entities/attribute.entity';
 import { ListAttributesQueryDto } from '../dto/list-attributes-query.dto';
+import { SortOrder } from 'src/common/dto/page-option.dto';
 
 @Injectable()
 export class AttributesRepository extends BaseRepository<Attribute> {
@@ -55,19 +56,9 @@ export class AttributesRepository extends BaseRepository<Attribute> {
     if (query.active !== undefined) {
       qb.andWhere('a.active = :active', { active: query.active });
     }
-    const sort = query.sort ?? 'sort_order';
-    if (sort === 'name') {
-      qb.orderBy('a.name', 'ASC');
-    } else if (sort === 'created_at') {
-      qb.orderBy('a.createdAt', 'ASC');
-    } else if (sort === 'code') {
-      qb.orderBy('a.code', 'ASC');
-    } else {
-      qb.orderBy('a.sortOrder', 'ASC', 'NULLS LAST').addOrderBy(
-        'a.name',
-        'ASC',
-      );
-    }
+    if (query.sort !== undefined) {
+      qb.orderBy('a.id', query.sort === SortOrder.ASC ? 'ASC' : 'DESC');
+    } 
     qb.skip(query.skip).take(query.limit);
     const [data, total] = await qb.getManyAndCount();
     return ListResponseDto.create(data, total, query.page, query.limit);

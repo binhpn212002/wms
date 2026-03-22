@@ -52,7 +52,6 @@ export class AttributesService {
     const saved = await this.attributesRepo.createAndSave({
       code,
       name,
-      sortOrder: dto.sort_order ?? null,
       active: dto.active ?? true,
     });
     return AttributeResponseDto.fromEntity(saved);
@@ -75,9 +74,6 @@ export class AttributesService {
     }
     if (dto.name !== undefined) {
       entity.name = dto.name.trim();
-    }
-    if (dto.sort_order !== undefined) {
-      entity.sortOrder = dto.sort_order;
     }
     if (dto.active !== undefined) {
       entity.active = dto.active;

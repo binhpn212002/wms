@@ -6,11 +6,9 @@ import {
   IsInt,
   IsOptional,
   IsString,
-  IsUUID,
   Max,
   MaxLength,
   Min,
-  ValidateIf,
 } from 'class-validator';
 import {
   LIMIT_DEFAULT,
@@ -18,14 +16,17 @@ import {
   PAGE_LIMIT_MAX,
   QUERY_MAX_LENGTH,
   PageOptionDto,
+  SortOrder,
   toInt,
 } from '../../../common/dto/page-option.dto';
 
-/**
- * Ghi đè page/limit/q kèm @ApiPropertyOptional để Swagger hiển thị query
- * (class-transformer + class-validator kế thừa DTO cha đôi khi không map đúng với GET ?).
- */
-export class ListCategoriesQueryDto extends PageOptionDto {
+export enum UnitSortField {
+  CODE = 'code',
+  NAME = 'name',
+  CREATED_AT = 'created_at',
+}
+
+export class ListUnitsQueryDto extends PageOptionDto {
   @ApiPropertyOptional({ minimum: 1, default: PAGE_DEFAULT, example: 1 })
   @Transform(({ value }) => {
     const n = toInt(value, PAGE_DEFAULT);
@@ -66,27 +67,10 @@ export class ListCategoriesQueryDto extends PageOptionDto {
   @MaxLength(QUERY_MAX_LENGTH)
   q?: string;
 
-  /**
-   * Lọc theo cha. Omit = không lọc; `parent_id=null` = chỉ nút gốc.
-   */
-  @ApiPropertyOptional({
-    format: 'uuid',
-    nullable: true,
-    description: 'Lọc theo parent; truyền null để chỉ danh mục gốc',
-  })
+  @ApiPropertyOptional({ enum: UnitSortField, default: UnitSortField.NAME })
   @IsOptional()
-  @Transform(({ value }) => {
-    if (value === undefined || value === null || value === '') {
-      return undefined;
-    }
-    if (String(value).toLowerCase() === 'null') {
-      return null;
-    }
-    return String(value);
-  })
-  @ValidateIf((o) => o.parent_id !== null && o.parent_id !== undefined)
-  @IsUUID('4')
-  parent_id?: string | null;
+  @IsEnum(UnitSortField)
+  sortBy?: UnitSortField;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -118,5 +102,4 @@ export class ListCategoriesQueryDto extends PageOptionDto {
   })
   @IsBoolean()
   includeDeleted?: boolean;
-
 }

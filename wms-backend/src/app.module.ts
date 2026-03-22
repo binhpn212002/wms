@@ -9,6 +9,7 @@ import redisConfig from './config/redis.config';
 import { AttributeValuesModule } from './modules/attribute-values/attribute-values.module';
 import { AttributesModule } from './modules/attributes/attributes.module';
 import { CategoriesModule } from './modules/categories/categories.module';
+import { UnitsModule } from './modules/units/units.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { CategoriesModule } from './modules/categories/categories.module';
     CategoriesModule,
     AttributesModule,
     AttributeValuesModule,
+    UnitsModule,
     // RedisModule,
   ],
   controllers: [AppController],

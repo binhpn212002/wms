@@ -1,5 +1,6 @@
 import { plainToInstance, Transform } from 'class-transformer';
 import {
+  IsEnum,
   IsInt,
   IsOptional,
   IsString,
@@ -10,6 +11,11 @@ import {
 } from 'class-validator';
 import { BadRequestException } from '@nestjs/common';
 import { ApiPropertyOptional } from '@nestjs/swagger';
+
+export enum SortOrder {
+  ASC = 'asc',
+  DESC = 'desc',
+}
 
 /** Giới hạn tối đa số bản ghi mỗi trang (tránh query quá lớn). */
 export const PAGE_LIMIT_MAX = 100;
@@ -78,6 +84,11 @@ export class PageOptionDto {
   @IsString()
   @MaxLength(QUERY_MAX_LENGTH)
   q?: string;
+  
+  @ApiPropertyOptional({ enum: SortOrder })
+  @IsOptional()
+  @IsEnum(SortOrder)
+  sort?: SortOrder;
 
   /** Số bản ghi bỏ qua (offset) cho TypeORM skip. */
   get skip(): number {

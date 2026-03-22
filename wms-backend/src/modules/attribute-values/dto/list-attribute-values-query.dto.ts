@@ -90,11 +90,4 @@ export class ListAttributeValuesQueryDto extends PageOptionDto {
   })
   @IsBoolean()
   includeDeleted?: boolean;
-
-  @ApiPropertyOptional({
-    enum: ['code', 'name', 'created_at'],
-  })
-  @IsOptional()
-  @IsEnum(['code', 'name', 'created_at'])
-  sort?: 'code' | 'name' | 'created_at';
 }

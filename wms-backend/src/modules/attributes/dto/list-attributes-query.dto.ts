@@ -17,6 +17,7 @@ import {
   QUERY_MAX_LENGTH,
   PageOptionDto,
   toInt,
+  SortOrder,
 } from '../../../common/dto/page-option.dto';
 
 export class ListAttributesQueryDto extends PageOptionDto {
@@ -90,11 +91,4 @@ export class ListAttributesQueryDto extends PageOptionDto {
   })
   @IsBoolean()
   includeDeleted?: boolean;
-
-  @ApiPropertyOptional({
-    enum: ['sort_order', 'code', 'name', 'created_at'],
-  })
-  @IsOptional()
-  @IsEnum(['sort_order', 'code', 'name', 'created_at'])
-  sort?: 'sort_order' | 'code' | 'name' | 'created_at';
 }

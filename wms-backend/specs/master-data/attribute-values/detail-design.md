@@ -9,7 +9,7 @@
 ## Phạm vi MVP
 
 - CRUD giá trị **lồng** trong một attribute: mỗi bản ghi là một lựa chọn cụ thể (`S`, `M`, `Đỏ`, …) thuộc đúng một `attribute_id`.
-- Trường: `attribute_id` (FK), `code`, `name`, `active`, `sort_order` (tùy chọn).
+- Trường: `attribute_id` (FK), `code`, `name`, `active` (tùy chọn).
 - `code` unique trong phạm vi **cùng một `attribute_id`** (khác với `attributes.code` là unique toàn bảng).
 - Tạo **tổ hợp biến thể** / SKU: module Product tham chiếu các **giá trị** (không gắn trực tiếp vào `attributes` ngoài quan hệ `attribute_id` → loại thuộc tính).
 
@@ -32,7 +32,7 @@
 
 - Unique **partial** (chỉ bản ghi chưa xóa mềm): `(attribute_id, code)` **WHERE** `deleted_at IS NULL`.
 - Tra cứu theo attribute: `(attribute_id)` kèm filter `deleted_at IS NULL` trong query.
-- Sắp xếp danh sách theo attribute: `(attribute_id, sort_order NULLS LAST, name)` hoặc `(attribute_id, sort_order, code)`.
+- Sắp xếp danh sách theo attribute: `(attribute_id, sort NULLS LAST, name)` hoặc `(attribute_id, sort, code)`.
 
 **FK**
 
@@ -52,7 +52,7 @@
    - Trim khoảng trắng đầu/cuối; chuẩn hóa độ dài tối đa và ký tự cho phép giống các master-data khác.
    - Unique trong phạm vi `(attribute_id)` cho các bản ghi **chưa xóa mềm** (`deleted_at IS NULL`).
 
-3. **`sort_order`**
+3. **`sort`**
    - Khi tạo mới: có thể gán tự động (max + 1 trong phạm vi `attribute_id`) hoặc để client gửi.
 
 4. **`deleted_at`**
@@ -78,7 +78,7 @@ Base path gợi ý: `/master-data/attributes/:attributeId/values` (prefix global
   - `q`: tìm theo `code` hoặc `name` (partial, case-insensitive nếu DB hỗ trợ).
   - `active`: boolean.
   - `includeDeleted`: boolean (mặc định `false`).
-  - `sort`: ví dụ `sort_order`, `code`, `name`, `created_at`.
+  - `sort`: ví dụ `sort`, `code`, `name`, `created_at`.
 
 **Response**: body chuẩn list (items + meta total) theo pattern chung WMS.
 
@@ -91,12 +91,12 @@ Base path gợi ý: `/master-data/attributes/:attributeId/values` (prefix global
 
 ### `POST /master-data/attributes/:attributeId/values`
 
-- **Body**: `{ "code", "name", "sort_order?", "active?" }` — không cần gửi `attribute_id` trong body nếu luôn lấy từ path (tránh lệch dữ liệu).
+- **Body**: `{ "code", "name", "sort?", "active?" }` — không cần gửi `attribute_id` trong body nếu luôn lấy từ path (tránh lệch dữ liệu).
 - **201** + body entity tạo được.
 
 ### `PATCH /master-data/attributes/:attributeId/values/:id`
 
-- **Body**: partial; cho phép đổi `code`, `name`, `sort_order`, `active` nếu không vi phạm unique `(attribute_id, code)` và quy tắc tham chiếu.
+- **Body**: partial; cho phép đổi `code`, `name`, `sort`, `active` nếu không vi phạm unique `(attribute_id, code)` và quy tắc tham chiếu.
 - Không cho đổi `attribute_id` qua PATCH (nếu cần “chuyển” value sang attribute khác — không MVP hoặc endpoint riêng có kiểm tra nặng).
 
 ### `DELETE /master-data/attributes/:attributeId/values/:id`
@@ -128,5 +128,5 @@ Payload lỗi nên có `code` (machine-readable) + `message` (human-readable) th
 ## Mở rộng sau MVP
 
 - Unique `(org_id, attribute_id, code)` khi multi-tenant.
-- Reorder batch `sort_order` cho toàn bộ values của một attribute.
+- Reorder batch `sort` cho toàn bộ values của một attribute.
 - Metadata bổ sung (màu swatch, hình ảnh minh họa) nếu UI cần.

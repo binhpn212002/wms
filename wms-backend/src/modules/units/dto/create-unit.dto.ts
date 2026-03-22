@@ -2,7 +2,6 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import {
   IsBoolean,
-  IsInt,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -10,8 +9,8 @@ import {
   MaxLength,
 } from 'class-validator';
 
-export class CreateAttributeDto {
-  @ApiProperty({ example: 'SIZE' })
+export class CreateUnitDto {
+  @ApiProperty({ example: 'PCS' })
   @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   @IsString()
   @IsNotEmpty()
@@ -21,12 +20,25 @@ export class CreateAttributeDto {
   })
   code: string;
 
-  @ApiProperty({ example: 'Kích cỡ' })
+  @ApiProperty({ example: 'Cái' })
   @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   @IsString()
   @IsNotEmpty()
   @MaxLength(255)
   name: string;
+
+  @ApiPropertyOptional({ example: 'cái' })
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (value === undefined || value === null) {
+      return undefined;
+    }
+    const s = String(value).trim();
+    return s === '' ? undefined : s;
+  })
+  @IsString()
+  @MaxLength(64)
+  symbol?: string;
 
   @ApiPropertyOptional({ default: true })
   @IsOptional()
