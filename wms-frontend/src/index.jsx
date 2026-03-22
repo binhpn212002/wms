@@ -16,6 +16,7 @@ import '@fontsource/public-sans/600.css';
 import '@fontsource/public-sans/700.css';
 
 // project imports
+import './firebase';
 import App from './App';
 import { ConfigProvider } from 'contexts/ConfigContext';
 import reportWebVitals from './reportWebVitals';
