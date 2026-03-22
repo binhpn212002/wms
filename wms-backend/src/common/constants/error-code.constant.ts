@@ -37,6 +37,13 @@ export const ErrorCode = {
   VARIANT_ATTRIBUTE_INVALID: 'VARIANT_ATTRIBUTE_INVALID',
   VARIANT_COMBO_DUPLICATE: 'VARIANT_COMBO_DUPLICATE',
   VARIANT_IN_USE: 'VARIANT_IN_USE',
+
+  // Supplier
+  SUPPLIER_NOT_FOUND: 'SUPPLIER_NOT_FOUND',
+  SUPPLIER_CODE_DUPLICATE: 'SUPPLIER_CODE_DUPLICATE',
+  SUPPLIER_TAX_ID_DUPLICATE: 'SUPPLIER_TAX_ID_DUPLICATE',
+  SUPPLIER_IN_USE: 'SUPPLIER_IN_USE',
+  SUPPLIER_CONTACT_NOT_FOUND: 'SUPPLIER_CONTACT_NOT_FOUND',
 } as const;
 
 export type ErrorCodeValue = (typeof ErrorCode)[keyof typeof ErrorCode];
@@ -81,4 +88,11 @@ export const ERROR_MESSAGE: Record<ErrorCodeValue, string> = {
     'Đã có biến thể khác cùng tổ hợp giá trị thuộc tính',
   [ErrorCode.VARIANT_IN_USE]:
     'Không thể xóa biến thể khi còn tồn/chứng từ tham chiếu',
+
+  [ErrorCode.SUPPLIER_NOT_FOUND]: 'Không tìm thấy nhà cung cấp',
+  [ErrorCode.SUPPLIER_CODE_DUPLICATE]: 'Mã nhà cung cấp đã tồn tại',
+  [ErrorCode.SUPPLIER_TAX_ID_DUPLICATE]: 'Mã số thuế đã tồn tại',
+  [ErrorCode.SUPPLIER_IN_USE]:
+    'Không thể xóa nhà cung cấp khi còn phiếu nhập/chứng từ tham chiếu',
+  [ErrorCode.SUPPLIER_CONTACT_NOT_FOUND]: 'Không tìm thấy liên hệ',
 };
