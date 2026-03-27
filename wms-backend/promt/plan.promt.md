@@ -99,3 +99,46 @@ Quy trình chi tiết:
 
 **Ví dụ đã áp dụng:** [specs/auth/detail-design.md](../specs/auth/detail-design.md) + [specs/auth/plan.md](../specs/auth/plan.md) (module `auth` không có entity riêng — dùng entity user + cấu hình JWT/Firebase).
 
+---
+
+## Quy ước đặt tên API routes (Backend)
+Mục tiêu: API dễ đọc, ổn định, map trực tiếp qua frontend `src/api/endpoints`.
+
+### 1) Base prefix
+- Ưu tiên: `/api/v1`
+- Mỗi module có namespace: `/api/v1/<module>`
+
+### 2) Resource naming
+- **Path segment**: kebab-case, dạng số nhiều (plural)
+  - Ví dụ: `warehouses`, `purchase-orders`, `stock-movements`
+- **Không** dùng động từ trong path (trừ action đặc biệt có lý do rõ ràng)
+
+### 3) CRUD chuẩn
+- `GET    /api/v1/<module>/<resources>`: list (pagination, filters)
+- `POST   /api/v1/<module>/<resources>`: create
+- `GET    /api/v1/<module>/<resources>/:id`: detail
+- `PUT    /api/v1/<module>/<resources>/:id`: update (full) hoặc `PATCH` (partial)
+- `DELETE /api/v1/<module>/<resources>/:id`: delete (soft-delete nếu áp dụng)
+
+### 4) Action endpoints (nếu bắt buộc)
+Chỉ dùng khi không thể mô hình hoá bằng resource.
+- Pattern: `POST /api/v1/<module>/<resources>/:id/<action>`
+  - Ví dụ: `POST /api/v1/purchase/purchase-orders/:id/approve`
+- Action name: kebab-case, động từ ngắn gọn (`approve`, `cancel`, `submit`, `export`)
+
+### 5) Query params chuẩn list
+- `page`, `pageSize`
+- `sortBy`, `sortDir` (`asc|desc`)
+- `q` (search keyword)
+- filter theo field: `status`, `fromDate`, `toDate`, ...
+
+### 6) Controller / Service / DTO naming
+- Controller: `<Module><Resource>Controller` (PascalCase)
+  - file: `<resource>.controller.ts` (kebab-case file name nếu dự án đang theo pattern đó; nếu không thì giữ như hiện tại repo)
+- Service: `<Module><Resource>Service`
+- DTO:
+  - `Create<Resource>Dto`, `Update<Resource>Dto`, `List<Resource>QueryDto`, `Detail<Resource>ParamDto`
+- Response:
+  - list: `{ items: T[], total: number, page: number, pageSize: number }`
+  - error: shape thống nhất (message + code + details/fields nếu validation)
+
