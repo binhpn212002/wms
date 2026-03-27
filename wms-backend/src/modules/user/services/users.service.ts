@@ -180,14 +180,6 @@ export class UsersService {
 
     await this.usersRepo.save(user);
 
-    if (dto.roleIds?.length) {
-      const roles = await this.rolesRepo.findByIds(dto.roleIds);
-      if (roles.length !== dto.roleIds.length) {
-        throw new UserRoleNotFoundException();
-      }
-      user.roles = roles;
-      await this.usersRepo.save(user);
-    }
 
     const full = await this.usersRepo.findByIdWithRoles(user.id);
     return UserResponseDto.fromEntity(full!);

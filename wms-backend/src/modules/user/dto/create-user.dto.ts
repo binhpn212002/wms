@@ -40,9 +40,4 @@ export class CreateUserDto {
   @MaxLength(255)
   fullName?: string;
 
-  @ApiPropertyOptional({ description: 'Gán vai trò lúc tạo (id từ seed)' })
-  @IsOptional()
-  @IsArray()
-  @IsUUID('4', { each: true })
-  roleIds?: string[];
 }

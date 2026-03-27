@@ -20,6 +20,7 @@ import { InventoryModule } from './modules/inventory/inventory.module';
 import { WarehousesModule } from './modules/warehouses/warehouses.module';
 import { UserModule } from './modules/user/user.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { TransfersModule } from './modules/transfers/transfers.module';
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { AuthModule } from './modules/auth/auth.module';
     InventoryModule,
     InboundModule,
     OutboundModule,
+    TransfersModule,
     WarehousesModule,
     UserModule,
     AuthModule,

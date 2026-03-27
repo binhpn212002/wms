@@ -81,6 +81,15 @@ export const ErrorCode = {
   OUTBOUND_NO_LINES: 'OUTBOUND_NO_LINES',
   OUTBOUND_WAREHOUSE_INACTIVE: 'OUTBOUND_WAREHOUSE_INACTIVE',
 
+  // Transfers
+  TRANSFER_NOT_FOUND: 'TRANSFER_NOT_FOUND',
+  TRANSFER_DOCUMENT_NO_DUPLICATE: 'TRANSFER_DOCUMENT_NO_DUPLICATE',
+  TRANSFER_INVALID_STATUS: 'TRANSFER_INVALID_STATUS',
+  TRANSFER_CANNOT_MODIFY_COMPLETED: 'TRANSFER_CANNOT_MODIFY_COMPLETED',
+  TRANSFER_NO_LINES: 'TRANSFER_NO_LINES',
+  TRANSFER_WAREHOUSE_INACTIVE: 'TRANSFER_WAREHOUSE_INACTIVE',
+  TRANSFER_SOURCE_DEST_SAME: 'TRANSFER_SOURCE_DEST_SAME',
+
   // User / Auth
   USER_NOT_FOUND: 'USER_NOT_FOUND',
   USER_USERNAME_DUPLICATE: 'USER_USERNAME_DUPLICATE',
@@ -187,6 +196,18 @@ export const ERROR_MESSAGE: Record<ErrorCodeValue, string> = {
   [ErrorCode.OUTBOUND_NO_LINES]: 'Phiếu xuất chưa có dòng hàng',
   [ErrorCode.OUTBOUND_WAREHOUSE_INACTIVE]:
     'Kho không hoạt động — không thể chọn cho phiếu xuất mới',
+
+  [ErrorCode.TRANSFER_NOT_FOUND]: 'Không tìm thấy phiếu chuyển kho',
+  [ErrorCode.TRANSFER_DOCUMENT_NO_DUPLICATE]: 'Số phiếu chuyển kho đã tồn tại',
+  [ErrorCode.TRANSFER_INVALID_STATUS]:
+    'Trạng thái phiếu chuyển kho không cho phép thao tác này',
+  [ErrorCode.TRANSFER_CANNOT_MODIFY_COMPLETED]:
+    'Không thể sửa phiếu chuyển kho đã hoàn tất',
+  [ErrorCode.TRANSFER_NO_LINES]: 'Phiếu chuyển kho chưa có dòng hàng',
+  [ErrorCode.TRANSFER_WAREHOUSE_INACTIVE]:
+    'Kho không hoạt động — không thể chọn cho phiếu chuyển kho mới',
+  [ErrorCode.TRANSFER_SOURCE_DEST_SAME]:
+    'Nguồn và đích không được trùng nhau trong cùng một dòng chuyển kho',
 
   [ErrorCode.USER_NOT_FOUND]: 'Không tìm thấy người dùng',
   [ErrorCode.USER_USERNAME_DUPLICATE]: 'Tên đăng nhập đã tồn tại',
