@@ -19,7 +19,14 @@ async function bootstrap() {
       },
     }),
   );
-
+  
+  app.enableCors(
+    {
+      origin: '*',
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization'],
+    },
+  );
   const config = new DocumentBuilder()
     .setTitle('WMS API')
     .setDescription('Warehouse Management System API')
