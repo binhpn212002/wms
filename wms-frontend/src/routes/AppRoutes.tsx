@@ -11,7 +11,6 @@ import { SuppliersPage } from '../pages/suppliers'
 import { TransfersPage } from '../pages/transfers'
 import { UsersPage } from '../pages/users'
 import { WarehousesPage } from '../pages/warehouses'
-import { AttributeValuesPage } from '../pages/master-data/attribute-values'
 import { AttributesPage } from '../pages/master-data/attributes'
 import { CategoriesPage } from '../pages/master-data/categories'
 import { UnitsPage } from '../pages/master-data/units'
@@ -24,10 +23,6 @@ export function AppRoutes() {
         <Route path={ROUTES.MASTER_DATA_CATEGORIES} element={<CategoriesPage />} />
         <Route path={ROUTES.MASTER_DATA_UNITS} element={<UnitsPage />} />
         <Route path={ROUTES.MASTER_DATA_ATTRIBUTES} element={<AttributesPage />} />
-        <Route
-          path={ROUTES.MASTER_DATA_ATTRIBUTE_VALUES}
-          element={<AttributeValuesPage />}
-        />
         <Route path={ROUTES.PRODUCTS} element={<ProductsPage />} />
         <Route path={ROUTES.WAREHOUSES} element={<WarehousesPage />} />
         <Route path={ROUTES.SUPPLIERS} element={<SuppliersPage />} />

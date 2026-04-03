@@ -1,14 +1,20 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
+  ArrayMaxSize,
+  IsArray,
   IsBoolean,
-  IsInt,
   IsNotEmpty,
   IsOptional,
   IsString,
   Matches,
   MaxLength,
+  ValidateNested,
 } from 'class-validator';
+import { CreateAttributeValueItemDto } from './create-attribute-value-item.dto';
+
+/** Tối đa số giá trị gửi kèm khi tạo thuộc tính (tránh payload quá lớn). */
+export const CREATE_ATTRIBUTE_VALUES_MAX = 200;
 
 export class CreateAttributeDto {
   @ApiProperty({ example: 'SIZE' })
@@ -32,4 +38,16 @@ export class CreateAttributeDto {
   @IsOptional()
   @IsBoolean()
   active?: boolean;
+
+  @ApiPropertyOptional({
+    type: [CreateAttributeValueItemDto],
+    description:
+      'Danh sách giá trị tuỳ chọn tạo cùng lúc (vd: S, M, L cho thuộc tính SIZE).',
+  })
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(CREATE_ATTRIBUTE_VALUES_MAX)
+  @ValidateNested({ each: true })
+  @Type(() => CreateAttributeValueItemDto)
+  values?: CreateAttributeValueItemDto[];
 }

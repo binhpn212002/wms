@@ -29,6 +29,18 @@ export class AttributesRepository extends BaseRepository<Attribute> {
     });
   }
 
+  findByIdWithValues(
+    id: string,
+    options?: { withDeleted?: boolean; includeValuesDeleted?: boolean },
+  ): Promise<Attribute | null> {
+    return this.repository.findOne({
+      where: { id },
+      relations: { values: true },
+      withDeleted: options?.withDeleted === true,
+      relationLoadStrategy: 'query',
+    });
+  }
+
   /**
    * Đã có bản ghi **chưa xóa mềm** trùng `code` (không tính `excludeId` — dùng khi PATCH).
    */
@@ -55,6 +67,13 @@ export class AttributesRepository extends BaseRepository<Attribute> {
     }
     if (query.active !== undefined) {
       qb.andWhere('a.active = :active', { active: query.active });
+    }
+    if (query.includeValues) {
+      qb.leftJoinAndSelect(
+        'a.values',
+        'v',
+        query.includeDeleted ? undefined : 'v.deleted_at IS NULL',
+      );
     }
     if (query.sort !== undefined) {
       qb.orderBy('a.id', query.sort === SortOrder.ASC ? 'ASC' : 'DESC');
