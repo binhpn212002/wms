@@ -1,5 +1,6 @@
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, OneToMany } from 'typeorm';
 import { BaseEntity } from '../../shared/base.entity';
+import { AttributeValue } from './attribute-value.entity';
 
 @Entity('attributes')
 export class Attribute extends BaseEntity {
@@ -11,4 +12,7 @@ export class Attribute extends BaseEntity {
 
   @Column({ name: 'active', type: 'boolean', default: true })
   active: boolean;
+
+  @OneToMany(() => AttributeValue, (v) => v.attribute)
+  values?: AttributeValue[];
 }

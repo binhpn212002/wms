@@ -31,6 +31,7 @@ export class AttributesController {
   @ApiQuery({ name: 'q', required: false, type: String })
   @ApiQuery({ name: 'active', required: false, type: Boolean })
   @ApiQuery({ name: 'includeDeleted', required: false, type: Boolean })
+  @ApiQuery({ name: 'includeValues', required: false, type: Boolean })
   @ApiQuery({
     name: 'sort',
     required: false,
@@ -43,11 +44,16 @@ export class AttributesController {
   @Get(':id')
   @ApiOperation({ summary: 'Chi tiết thuộc tính theo id' })
   @ApiQuery({ name: 'includeDeleted', required: false, type: Boolean })
+  @ApiQuery({ name: 'includeValues', required: false, type: Boolean })
   findOne(
     @Param('id', ParseUUIDPipe) id: string,
     @Query() query: GetAttributeQueryDto,
   ) {
-    return this.attributesService.findOne(id, query.includeDeleted);
+    return this.attributesService.findOne(
+      id,
+      query.includeDeleted,
+      query.includeValues,
+    );
   }
 
   @Post()

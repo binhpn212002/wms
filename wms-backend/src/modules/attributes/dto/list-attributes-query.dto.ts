@@ -91,4 +91,21 @@ export class ListAttributesQueryDto extends PageOptionDto {
   })
   @IsBoolean()
   includeDeleted?: boolean;
+
+  @ApiPropertyOptional({
+    default: false,
+    description: 'Nếu true, trả kèm danh sách giá trị thuộc tính (để hiển thị trên bảng).',
+  })
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (value === undefined || value === null || value === '') {
+      return false;
+    }
+    if (value === 'true' || value === true) {
+      return true;
+    }
+    return false;
+  })
+  @IsBoolean()
+  includeValues?: boolean;
 }

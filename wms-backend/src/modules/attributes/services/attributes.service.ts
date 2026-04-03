@@ -1,10 +1,14 @@
 import { Injectable } from '@nestjs/common';
+import { DataSource } from 'typeorm';
+import { AttributeValueCodeDuplicateException } from '../../../common/exceptions/attribute-value.exceptions';
 import {
   AttributeCodeDuplicateException,
   AttributeHasValuesException,
   AttributeNotFoundException,
 } from '../../../common/exceptions/attribute.exceptions';
 import { ListResponseDto } from '../../../common/dto/list-response.dto';
+import { AttributeValue } from '../../../database/entities/attribute-value.entity';
+import { Attribute } from '../../../database/entities/attribute.entity';
 import { AttributeResponseDto } from '../dto/attribute-response.dto';
 import { CreateAttributeDto } from '../dto/create-attribute.dto';
 import { ListAttributesQueryDto } from '../dto/list-attributes-query.dto';
@@ -13,7 +17,10 @@ import { AttributesRepository } from '../repositories/attributes.repository';
 
 @Injectable()
 export class AttributesService {
-  constructor(private readonly attributesRepo: AttributesRepository) {}
+  constructor(
+    private readonly attributesRepo: AttributesRepository,
+    private readonly dataSource: DataSource,
+  ) {}
 
   async list(
     query: ListAttributesQueryDto,
@@ -30,10 +37,15 @@ export class AttributesService {
   async findOne(
     id: string,
     includeDeleted?: boolean,
+    includeValues?: boolean,
   ): Promise<AttributeResponseDto> {
-    const entity = await this.attributesRepo.findById(id, {
-      withDeleted: includeDeleted,
-    });
+    const entity = includeValues
+      ? await this.attributesRepo.findByIdWithValues(id, {
+          withDeleted: includeDeleted,
+        })
+      : await this.attributesRepo.findById(id, {
+          withDeleted: includeDeleted,
+        });
     if (!entity) {
       throw new AttributeNotFoundException();
     }
@@ -46,15 +58,50 @@ export class AttributesService {
   async create(dto: CreateAttributeDto): Promise<AttributeResponseDto> {
     const code = dto.code.trim();
     const name = dto.name.trim();
-    if (await this.attributesRepo.existsActiveByCode(code)) {
-      throw new AttributeCodeDuplicateException();
-    }
-    const saved = await this.attributesRepo.createAndSave({
-      code,
-      name,
-      active: dto.active ?? true,
+    const normalizedValues =
+      dto.values?.map((v) => ({
+        code: v.code.trim(),
+        name: v.name.trim(),
+        active: v.active ?? true,
+      })) ?? [];
+
+    return this.dataSource.transaction(async (manager) => {
+      const attrRepo = manager.getRepository(Attribute);
+      const valRepo = manager.getRepository(AttributeValue);
+
+      if (await attrRepo.existsBy({ code })) {
+        throw new AttributeCodeDuplicateException();
+      }
+
+      const attr = attrRepo.create({
+        code,
+        name,
+        active: dto.active ?? true,
+      });
+      const saved = await attrRepo.save(attr);
+
+      if (normalizedValues.length > 0) {
+        const seenCodes = new Set<string>();
+        for (const v of normalizedValues) {
+          if (seenCodes.has(v.code)) {
+            throw new AttributeValueCodeDuplicateException();
+          }
+          seenCodes.add(v.code);
+        }
+
+        const rows = normalizedValues.map((v) =>
+          valRepo.create({
+            attributeId: saved.id,
+            code: v.code,
+            name: v.name,
+            active: v.active,
+          }),
+        );
+        await valRepo.save(rows);
+      }
+
+      return AttributeResponseDto.fromEntity(saved);
     });
-    return AttributeResponseDto.fromEntity(saved);
   }
 
   async update(

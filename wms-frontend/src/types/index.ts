@@ -28,6 +28,7 @@ export type {
 export type {
   Attribute,
   ListAttributesQuery,
+  CreateAttributeValueItemRequest,
   CreateAttributeRequest,
   UpdateAttributeRequest,
   AttributeValue,

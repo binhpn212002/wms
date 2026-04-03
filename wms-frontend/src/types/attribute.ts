@@ -8,18 +8,36 @@ export interface Attribute {
   created_at: string
   updated_at: string
   deleted_at: string | null
+  values?: AttributeValueEmbed[]
+}
+
+export interface AttributeValueEmbed {
+  id: string
+  code: string
+  name: string
+  active: boolean
+  deleted_at: string | null
 }
 
 export interface ListAttributesQuery extends PageQuery {
   sort?: SortOrder
   active?: boolean
   includeDeleted?: boolean
+  includeValues?: boolean
+}
+
+export interface CreateAttributeValueItemRequest {
+  code: string
+  name: string
+  active?: boolean
 }
 
 export interface CreateAttributeRequest {
   code: string
   name: string
   active?: boolean
+  /** Giá trị tuỳ chọn tạo cùng lúc khi tạo thuộc tính. */
+  values?: CreateAttributeValueItemRequest[]
 }
 
 export type UpdateAttributeRequest = Partial<CreateAttributeRequest>
