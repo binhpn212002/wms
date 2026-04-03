@@ -30,6 +30,7 @@ export type {
   ListAttributesQuery,
   CreateAttributeValueItemRequest,
   CreateAttributeRequest,
+  UpsertAttributeValueItemRequest,
   UpdateAttributeRequest,
   AttributeValue,
   AttributeValueSortField,

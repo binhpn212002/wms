@@ -40,7 +40,19 @@ export interface CreateAttributeRequest {
   values?: CreateAttributeValueItemRequest[]
 }
 
-export type UpdateAttributeRequest = Partial<CreateAttributeRequest>
+/** Giá trị khi PATCH thuộc tính: có `id` = cập nhật, không có = thêm mới. */
+export interface UpsertAttributeValueItemRequest {
+  id?: string
+  code: string
+  name: string
+  active?: boolean
+}
+
+export type UpdateAttributeRequest = Partial<
+  Omit<CreateAttributeRequest, 'values'>
+> & {
+  values?: UpsertAttributeValueItemRequest[]
+}
 
 export interface AttributeValue {
   id: string
