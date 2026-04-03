@@ -35,8 +35,8 @@ export class VariantNotFoundException extends NotFoundException {
 export class VariantSkuDuplicateException extends ConflictException {
   constructor() {
     super({
-      code: ErrorCode.VARIANT_SKU_DUPLICATE,
-      message: ERROR_MESSAGE[ErrorCode.VARIANT_SKU_DUPLICATE],
+      code: ErrorCode.SKU_CONFLICT,
+      message: ERROR_MESSAGE[ErrorCode.SKU_CONFLICT],
     });
   }
 }
@@ -44,17 +44,26 @@ export class VariantSkuDuplicateException extends ConflictException {
 export class VariantBarcodeDuplicateException extends ConflictException {
   constructor() {
     super({
-      code: ErrorCode.VARIANT_BARCODE_DUPLICATE,
-      message: ERROR_MESSAGE[ErrorCode.VARIANT_BARCODE_DUPLICATE],
+      code: ErrorCode.BARCODE_CONFLICT,
+      message: ERROR_MESSAGE[ErrorCode.BARCODE_CONFLICT],
     });
   }
 }
 
-export class VariantAttributeInvalidException extends UnprocessableEntityException {
+export class AttributeValueInvalidException extends UnprocessableEntityException {
   constructor() {
     super({
-      code: ErrorCode.VARIANT_ATTRIBUTE_INVALID,
-      message: ERROR_MESSAGE[ErrorCode.VARIANT_ATTRIBUTE_INVALID],
+      code: ErrorCode.ATTRIBUTE_VALUE_INVALID,
+      message: ERROR_MESSAGE[ErrorCode.ATTRIBUTE_VALUE_INVALID],
+    });
+  }
+}
+
+export class AttributeValueMismatchException extends UnprocessableEntityException {
+  constructor() {
+    super({
+      code: ErrorCode.ATTRIBUTE_VALUE_MISMATCH,
+      message: ERROR_MESSAGE[ErrorCode.ATTRIBUTE_VALUE_MISMATCH],
     });
   }
 }
@@ -62,8 +71,8 @@ export class VariantAttributeInvalidException extends UnprocessableEntityExcepti
 export class VariantComboDuplicateException extends ConflictException {
   constructor() {
     super({
-      code: ErrorCode.VARIANT_COMBO_DUPLICATE,
-      message: ERROR_MESSAGE[ErrorCode.VARIANT_COMBO_DUPLICATE],
+      code: ErrorCode.VARIANT_COMBINATION_CONFLICT,
+      message: ERROR_MESSAGE[ErrorCode.VARIANT_COMBINATION_CONFLICT],
     });
   }
 }
@@ -73,6 +82,15 @@ export class VariantInUseException extends ConflictException {
     super({
       code: ErrorCode.VARIANT_IN_USE,
       message: ERROR_MESSAGE[ErrorCode.VARIANT_IN_USE],
+    });
+  }
+}
+
+export class VariantRuleViolationException extends UnprocessableEntityException {
+  constructor() {
+    super({
+      code: ErrorCode.VARIANT_RULE_VIOLATION,
+      message: ERROR_MESSAGE[ErrorCode.VARIANT_RULE_VIOLATION],
     });
   }
 }

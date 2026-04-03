@@ -6,6 +6,7 @@ import { InboundPage } from '../pages/inbound'
 import { InventoryPage } from '../pages/inventory'
 import { OutboundPage } from '../pages/outbound'
 import { ProductsPage } from '../pages/products'
+import { ProductVariantsPage } from '../pages/product-variants'
 import { ReportsPage } from '../pages/reports'
 import { SuppliersPage } from '../pages/suppliers'
 import { TransfersPage } from '../pages/transfers'
@@ -24,6 +25,7 @@ export function AppRoutes() {
         <Route path={ROUTES.MASTER_DATA_UNITS} element={<UnitsPage />} />
         <Route path={ROUTES.MASTER_DATA_ATTRIBUTES} element={<AttributesPage />} />
         <Route path={ROUTES.PRODUCTS} element={<ProductsPage />} />
+        <Route path={ROUTES.PRODUCT_VARIANTS} element={<ProductVariantsPage />} />
         <Route path={ROUTES.WAREHOUSES} element={<WarehousesPage />} />
         <Route path={ROUTES.SUPPLIERS} element={<SuppliersPage />} />
         <Route path={ROUTES.INBOUND} element={<InboundPage />} />

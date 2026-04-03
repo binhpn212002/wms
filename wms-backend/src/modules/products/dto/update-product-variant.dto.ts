@@ -1,12 +1,19 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
+  Allow,
+  ArrayMaxSize,
   IsArray,
+  IsBoolean,
+  IsNumber,
   IsOptional,
   IsString,
   IsUUID,
+  Length,
   Matches,
   MaxLength,
+  Min,
+  ValidateIf,
 } from 'class-validator';
 
 export class UpdateProductVariantDto {
@@ -25,19 +32,86 @@ export class UpdateProductVariantDto {
   @ApiPropertyOptional()
   @IsOptional()
   @Transform(({ value }) => {
-    if (value === undefined || value === null) {
+    if (value === undefined) {
       return undefined;
     }
-    const s = String(value).trim();
-    return s === '' ? null : s;
+    if (value === null || value === '') {
+      return null;
+    }
+    return String(value).trim();
   })
   @IsString()
   @MaxLength(128)
   barcode?: string | null;
 
-  @ApiPropertyOptional({ type: [String] })
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  active?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (value === undefined || value === null || value === '') {
+      return undefined;
+    }
+    return String(value).trim().toUpperCase();
+  })
+  @ValidateIf(
+    (o) =>
+      o.currencyCode !== undefined &&
+      o.currencyCode !== null &&
+      o.currencyCode !== '',
+  )
+  @IsString()
+  @Length(3, 3)
+  @Matches(/^[A-Z]{3}$/, { message: 'currencyCode phải là mã ISO-4217 3 ký tự' })
+  currencyCode?: string | null;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  listPrice?: number | null;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  costPrice?: number | null;
+
+  @ApiPropertyOptional({ type: [String], maxItems: 10 })
   @IsOptional()
   @IsArray()
-  @IsUUID('4', { each: true })
-  attributeValueIds?: string[];
+  @ArrayMaxSize(10)
+  @IsString({ each: true })
+  @MaxLength(2048, { each: true })
+  imageUrls?: string[] | null;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 3 })
+  @Min(0)
+  minStock?: number | null;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 3 })
+  @Min(0)
+  maxStock?: number | null;
+
+  /** Omit = giữ map; gửi cả hai kể cả null để đổi/xóa map (xử lý ở service). */
+  @ApiPropertyOptional({ format: 'uuid' })
+  @IsOptional()
+  @Allow()
+  attributeId?: string | null;
+
+  @ApiPropertyOptional({ format: 'uuid' })
+  @IsOptional()
+  @Allow()
+  valueId?: string | null;
 }
