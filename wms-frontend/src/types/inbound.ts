@@ -7,8 +7,34 @@ export type InboundSortField =
   | 'document_no'
   | 'created_at'
 
-/** Kiểu phiếu nhập chi tiết — giữ mở vì BE có thể mở rộng trường. */
-export type InboundDocument = Record<string, unknown>
+export interface InboundLine {
+  id: string
+  inboundDocumentId: string
+  lineNo: number
+  variantId: string
+  quantity: string
+  unitPrice: string | null
+  locationId: string
+  createdAt?: string
+  updatedAt?: string
+  [k: string]: unknown
+}
+
+/** MVP fields + mở rộng (cho phép BE thêm field). */
+export interface InboundDocument {
+  id: string
+  documentNo: string
+  documentDate: string
+  supplierId: string
+  warehouseId: string
+  status: InboundDocumentStatus
+  notes: string | null
+  createdAt: string
+  updatedAt: string
+  deletedAt?: string | null
+  lines?: InboundLine[]
+  [k: string]: unknown
+}
 
 export interface ListInboundQuery extends PageQuery {
   sortBy?: InboundSortField

@@ -30,6 +30,7 @@ export interface CreateWarehouseRequest {
   name: string
   address?: string
   active?: boolean
+  defaultLocationId?: string | null
 }
 
 export type UpdateWarehouseRequest = Partial<CreateWarehouseRequest>

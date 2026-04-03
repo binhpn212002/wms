@@ -7,7 +7,33 @@ export type OutboundSortField =
   | 'document_no'
   | 'created_at'
 
-export type OutboundDocument = Record<string, unknown>
+export interface OutboundLine {
+  id: string
+  outboundDocumentId: string
+  lineNo: number
+  variantId: string
+  quantity: string
+  locationId: string
+  createdAt?: string
+  updatedAt?: string
+  [k: string]: unknown
+}
+
+/** MVP fields + mở rộng (cho phép BE thêm field). */
+export interface OutboundDocument {
+  id: string
+  documentNo: string
+  documentDate: string
+  warehouseId: string
+  status: OutboundDocumentStatus
+  reason: string | null
+  notes: string | null
+  createdAt: string
+  updatedAt: string
+  deletedAt?: string | null
+  lines?: OutboundLine[]
+  [k: string]: unknown
+}
 
 export interface ListOutboundQuery extends PageQuery {
   sortBy?: OutboundSortField
