@@ -1,19 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, In, Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { ListResponseDto } from '../../../common/dto/list-response.dto';
 import { CategoryNotFoundException } from '../../../common/exceptions/category.exceptions';
 import {
+  AttributeValueInvalidException,
+  AttributeValueMismatchException,
   ProductCodeDuplicateException,
   ProductNotFoundException,
-  VariantAttributeInvalidException,
   VariantBarcodeDuplicateException,
   VariantComboDuplicateException,
   VariantInUseException,
   VariantNotFoundException,
+  VariantRuleViolationException,
   VariantSkuDuplicateException,
 } from '../../../common/exceptions/product.exceptions';
 import { UnitNotFoundException } from '../../../common/exceptions/unit.exceptions';
-import { ListResponseDto } from '../../../common/dto/list-response.dto';
 import { AttributeValue } from '../../../database/entities/attribute-value.entity';
 import { Category } from '../../../database/entities/category.entity';
 import { ProductVariantAttributeValue } from '../../../database/entities/product-variant-attribute-value.entity';
@@ -23,6 +25,7 @@ import { Unit } from '../../../database/entities/unit.entity';
 import { CreateProductDto } from '../dto/create-product.dto';
 import { CreateProductVariantDto } from '../dto/create-product-variant.dto';
 import { GetProductQueryDto } from '../dto/get-product-query.dto';
+import { ListProductVariantsQueryDto } from '../dto/list-product-variants-query.dto';
 import { ListProductsQueryDto } from '../dto/list-products-query.dto';
 import { ProductResponseDto } from '../dto/product-response.dto';
 import { ProductVariantResponseDto } from '../dto/product-variant-response.dto';
@@ -45,14 +48,128 @@ export class ProductsService {
     private readonly attributeValueRepo: Repository<AttributeValue>,
   ) {}
 
-  private comboKey(attributeValueIds: string[]): string {
-    return [...attributeValueIds].sort().join(',');
-  }
-
   /** Stub: thay bằng đếm tồn/chứng từ khi có module kho. */
   private async countStockRefsByVariantId(_variantId: string): Promise<number> {
     void _variantId;
     return 0;
+  }
+
+  private createDtoResolvedValueId(dto: CreateProductVariantDto): string | null {
+    const a = dto.attributeId;
+    const v = dto.valueId;
+    const hasA = a !== undefined && a !== null;
+    const hasV = v !== undefined && v !== null;
+    if (hasA !== hasV) {
+      throw new AttributeValueMismatchException();
+    }
+    if (!hasA) {
+      return null;
+    }
+    return v as string;
+  }
+
+  private assertCatalogNumbers(
+    minStock?: number | null,
+    maxStock?: number | null,
+  ): void {
+    if (
+      minStock != null &&
+      maxStock != null &&
+      maxStock < minStock
+    ) {
+      throw new VariantRuleViolationException();
+    }
+  }
+
+  private async assertAttributeValueForPair(
+    attributeId: string,
+    valueId: string,
+  ): Promise<void> {
+    const row = await this.attributeValueRepo.findOne({
+      where: { id: valueId },
+    });
+    if (!row || row.deletedAt) {
+      throw new AttributeValueInvalidException();
+    }
+    if (!row.active) {
+      throw new AttributeValueInvalidException();
+    }
+    if (row.attributeId !== attributeId) {
+      throw new AttributeValueMismatchException();
+    }
+  }
+
+  private async assertValueIdUniqueOnProduct(
+    productId: string,
+    valueId: string,
+    excludeVariantId?: string,
+  ): Promise<void> {
+    const holder =
+      await this.productVariantsRepo.findVariantIdHoldingValueOnProduct(
+        productId,
+        valueId,
+        excludeVariantId,
+      );
+    if (holder) {
+      throw new VariantComboDuplicateException();
+    }
+  }
+
+  private async assertDefaultVariantUniqueOnProduct(
+    productId: string,
+    excludeVariantId?: string,
+  ): Promise<void> {
+    const existing = await this.productVariantsRepo.findFirstDefaultVariantId(
+      productId,
+      excludeVariantId,
+    );
+    if (existing) {
+      throw new VariantComboDuplicateException();
+    }
+  }
+
+  private assertIntraCreateVariantUniques(
+    variants: CreateProductVariantDto[],
+  ): void {
+    const seenValue = new Set<string>();
+    let defaultCount = 0;
+    for (const vd of variants) {
+      const valueId = this.createDtoResolvedValueId(vd);
+      if (valueId) {
+        if (seenValue.has(valueId)) {
+          throw new VariantComboDuplicateException();
+        }
+        seenValue.add(valueId);
+      } else {
+        defaultCount += 1;
+        if (defaultCount > 1) {
+          throw new VariantComboDuplicateException();
+        }
+      }
+    }
+  }
+
+  /** Chuẩn hóa + kiểm tra attribute value; không kiểm tra trùng theo product (dùng khi tạo sản phẩm mới). */
+  private async prepareVariantDtoForCreateProduct(
+    dto: CreateProductVariantDto,
+  ): Promise<string | null> {
+    this.assertCatalogNumbers(dto.minStock, dto.maxStock);
+    const valueId = this.createDtoResolvedValueId(dto);
+    if (valueId) {
+      await this.assertAttributeValueForPair(
+        dto.attributeId as string,
+        valueId,
+      );
+    }
+    if (await this.productVariantsRepo.existsActiveBySku(dto.sku)) {
+      throw new VariantSkuDuplicateException();
+    }
+    if (dto.barcode) {
+      if (await this.productVariantsRepo.existsActiveByBarcode(dto.barcode)) {
+        throw new VariantBarcodeDuplicateException();
+      }
+    }
+    return valueId;
   }
 
   private async assertCategoryAndUnit(
@@ -78,70 +195,6 @@ export class ProductsService {
     }
     if (!unit.active) {
       throw new UnitNotFoundException();
-    }
-  }
-
-  private async validateAttributeValueIds(ids: string[]): Promise<void> {
-    if (ids.length === 0) {
-      return;
-    }
-    const uniq = [...new Set(ids)];
-    if (uniq.length !== ids.length) {
-      throw new VariantAttributeInvalidException();
-    }
-    const rows = await this.attributeValueRepo.find({
-      where: { id: In(uniq) },
-      relations: ['attribute'],
-    });
-    if (rows.length !== uniq.length) {
-      throw new VariantAttributeInvalidException();
-    }
-    for (const r of rows) {
-      if (r.deletedAt) {
-        throw new VariantAttributeInvalidException();
-      }
-      if (!r.active) {
-        throw new VariantAttributeInvalidException();
-      }
-    }
-    const attrIds = rows.map((r) => r.attributeId);
-    if (new Set(attrIds).size !== attrIds.length) {
-      throw new VariantAttributeInvalidException();
-    }
-  }
-
-  private async assertComboUniqueForProduct(
-    productId: string,
-    attributeValueIds: string[],
-    excludeVariantId?: string | null,
-  ): Promise<void> {
-    const key = this.comboKey(attributeValueIds);
-    const vids =
-      await this.productVariantsRepo.findVariantIdsByProductId(productId);
-    for (const vid of vids) {
-      if (excludeVariantId && vid === excludeVariantId) {
-        continue;
-      }
-      const existing =
-        await this.productVariantsRepo.getSortedAttributeValueIdsForVariant(
-          vid,
-        );
-      if (this.comboKey(existing) === key) {
-        throw new VariantComboDuplicateException();
-      }
-    }
-  }
-
-  private assertIntraCreateComboUnique(
-    variants: CreateProductVariantDto[],
-  ): void {
-    const seen = new Set<string>();
-    for (const vd of variants) {
-      const k = this.comboKey(vd.attributeValueIds ?? []);
-      if (seen.has(k)) {
-        throw new VariantComboDuplicateException();
-      }
-      seen.add(k);
     }
   }
 
@@ -199,23 +252,48 @@ export class ProductsService {
     return ProductResponseDto.fromEntity(entity, { variants: variantDtos });
   }
 
+  async listVariants(
+    productId: string,
+    query: ListProductVariantsQueryDto,
+  ): Promise<ListResponseDto<ProductVariantResponseDto>> {
+    const product = await this.productsRepo.findById(productId, {
+      withDeleted: query.includeDeleted === true,
+    });
+    if (!product) {
+      throw new ProductNotFoundException();
+    }
+    if (!query.includeDeleted && product.deletedAt) {
+      throw new ProductNotFoundException();
+    }
+    const res = await this.productVariantsRepo.findManyByProductId(
+      productId,
+      query,
+    );
+    const data = res.data.map((v) =>
+      ProductVariantResponseDto.fromEntity(v, v.attributeValueMaps),
+    );
+    return ListResponseDto.create(data, res.total, res.page, res.limit);
+  }
+
+  async lookupVariants(
+    query: ListProductVariantsQueryDto,
+  ): Promise<ListResponseDto<ProductVariantResponseDto>> {
+    const res = await this.productVariantsRepo.findManyLookup(query);
+    const data = res.data.map((v) =>
+      ProductVariantResponseDto.fromEntityWithProduct(v, v.attributeValueMaps),
+    );
+    return ListResponseDto.create(data, res.total, res.page, res.limit);
+  }
+
   async create(dto: CreateProductDto): Promise<ProductResponseDto> {
     const code = dto.code.trim().toUpperCase();
     await this.assertCategoryAndUnit(dto.categoryId, dto.defaultUomId);
     if (await this.productsRepo.existsActiveByCode(code)) {
       throw new ProductCodeDuplicateException();
     }
-    this.assertIntraCreateComboUnique(dto.variants);
+    this.assertIntraCreateVariantUniques(dto.variants);
     for (const vd of dto.variants) {
-      await this.validateAttributeValueIds(vd.attributeValueIds ?? []);
-      if (await this.productVariantsRepo.existsActiveBySku(vd.sku)) {
-        throw new VariantSkuDuplicateException();
-      }
-      if (vd.barcode) {
-        if (await this.productVariantsRepo.existsActiveByBarcode(vd.barcode)) {
-          throw new VariantBarcodeDuplicateException();
-        }
-      }
+      await this.prepareVariantDtoForCreateProduct(vd);
     }
 
     const newProductId = await this.dataSource.transaction(async (manager) => {
@@ -233,20 +311,25 @@ export class ProductsService {
       await productRepo.save(product);
 
       for (const vd of dto.variants) {
+        const valueId = this.createDtoResolvedValueId(vd);
         const variant = variantRepo.create({
           productId: product.id,
-          sku: vd.sku.trim().toUpperCase(),
+          sku: vd.sku,
           barcode: vd.barcode?.trim() ? vd.barcode.trim() : null,
+          active: vd.active ?? true,
+          currencyCode: vd.currencyCode?.trim() ? vd.currencyCode.trim() : null,
+          listPrice: vd.listPrice ?? null,
+          costPrice: vd.costPrice ?? null,
+          imageUrls: vd.imageUrls?.length ? vd.imageUrls : [],
+          minStock: vd.minStock ?? null,
+          maxStock: vd.maxStock ?? null,
         });
         await variantRepo.save(variant);
-        const ids = vd.attributeValueIds ?? [];
-        if (ids.length > 0) {
-          await mapRepo.insert(
-            ids.map((attributeValueId) => ({
-              variantId: variant.id,
-              attributeValueId,
-            })),
-          );
+        if (valueId) {
+          await mapRepo.insert({
+            variantId: variant.id,
+            attributeValueId: valueId,
+          });
         }
       }
 
@@ -310,11 +393,17 @@ export class ProductsService {
     if (!product) {
       throw new ProductNotFoundException();
     }
-    await this.validateAttributeValueIds(dto.attributeValueIds ?? []);
-    await this.assertComboUniqueForProduct(
-      productId,
-      dto.attributeValueIds ?? [],
-    );
+    this.assertCatalogNumbers(dto.minStock, dto.maxStock);
+    const valueId = this.createDtoResolvedValueId(dto);
+    if (valueId) {
+      await this.assertAttributeValueForPair(
+        dto.attributeId as string,
+        valueId,
+      );
+      await this.assertValueIdUniqueOnProduct(productId, valueId);
+    } else {
+      await this.assertDefaultVariantUniqueOnProduct(productId);
+    }
     if (await this.productVariantsRepo.existsActiveBySku(dto.sku)) {
       throw new VariantSkuDuplicateException();
     }
@@ -329,18 +418,22 @@ export class ProductsService {
       const mapRepo = manager.getRepository(ProductVariantAttributeValue);
       const v = variantRepo.create({
         productId,
-        sku: dto.sku.trim().toUpperCase(),
+        sku: dto.sku,
         barcode: dto.barcode?.trim() ? dto.barcode.trim() : null,
+        active: dto.active ?? true,
+        currencyCode: dto.currencyCode?.trim() ? dto.currencyCode.trim() : null,
+        listPrice: dto.listPrice ?? null,
+        costPrice: dto.costPrice ?? null,
+        imageUrls: dto.imageUrls?.length ? dto.imageUrls : [],
+        minStock: dto.minStock ?? null,
+        maxStock: dto.maxStock ?? null,
       });
       await variantRepo.save(v);
-      const ids = dto.attributeValueIds ?? [];
-      if (ids.length > 0) {
-        await mapRepo.insert(
-          ids.map((attributeValueId) => ({
-            variantId: v.id,
-            attributeValueId,
-          })),
-        );
+      if (valueId) {
+        await mapRepo.insert({
+          variantId: v.id,
+          attributeValueId: valueId,
+        });
       }
       return v;
     });
@@ -371,6 +464,31 @@ export class ProductsService {
     if (!variant) {
       throw new VariantNotFoundException();
     }
+
+    const hasAttrKey = Object.prototype.hasOwnProperty.call(dto, 'attributeId');
+    const hasValKey = Object.prototype.hasOwnProperty.call(dto, 'valueId');
+    if (hasAttrKey !== hasValKey) {
+      throw new AttributeValueMismatchException();
+    }
+    let mapReplaceValueId: string | null | undefined;
+    if (hasAttrKey && hasValKey) {
+      const a = dto.attributeId;
+      const v = dto.valueId;
+      const bothNull = a === null && v === null;
+      const bothSet = a !== undefined && a !== null && v !== undefined && v !== null;
+      if (!bothNull && !bothSet) {
+        throw new AttributeValueMismatchException();
+      }
+      if (bothNull) {
+        mapReplaceValueId = null;
+        await this.assertDefaultVariantUniqueOnProduct(productId, variantId);
+      } else {
+        await this.assertAttributeValueForPair(a as string, v as string);
+        await this.assertValueIdUniqueOnProduct(productId, v as string, variantId);
+        mapReplaceValueId = v as string;
+      }
+    }
+
     if (dto.sku !== undefined) {
       const next = dto.sku.trim().toUpperCase();
       if (await this.productVariantsRepo.existsActiveBySku(next, variantId)) {
@@ -391,19 +509,48 @@ export class ProductsService {
       }
       variant.barcode = b;
     }
-    if (dto.attributeValueIds !== undefined) {
-      await this.validateAttributeValueIds(dto.attributeValueIds);
-      await this.assertComboUniqueForProduct(
-        productId,
-        dto.attributeValueIds,
-        variantId,
-      );
-      await this.productVariantsRepo.replaceAttributeMaps(
-        variantId,
-        dto.attributeValueIds,
-      );
+    if (dto.active !== undefined) {
+      variant.active = dto.active;
     }
-    await this.productVariantsRepo.save(variant);
+    if (dto.currencyCode !== undefined) {
+      const c = dto.currencyCode;
+      variant.currencyCode =
+        c === null || c === undefined || c === '' ? null : String(c).trim().toUpperCase();
+    }
+    if (dto.listPrice !== undefined) {
+      variant.listPrice = dto.listPrice;
+    }
+    if (dto.costPrice !== undefined) {
+      variant.costPrice = dto.costPrice;
+    }
+    if (dto.imageUrls !== undefined) {
+      variant.imageUrls =
+        dto.imageUrls === null || dto.imageUrls.length === 0 ? [] : dto.imageUrls;
+    }
+    if (dto.minStock !== undefined) {
+      variant.minStock = dto.minStock;
+    }
+    if (dto.maxStock !== undefined) {
+      variant.maxStock = dto.maxStock;
+    }
+
+    this.assertCatalogNumbers(variant.minStock, variant.maxStock);
+
+    await this.dataSource.transaction(async (manager) => {
+      const variantRepo = manager.getRepository(ProductVariant);
+      const mapRepo = manager.getRepository(ProductVariantAttributeValue);
+      await variantRepo.save(variant);
+      if (mapReplaceValueId !== undefined) {
+        await mapRepo.delete({ variantId });
+        if (mapReplaceValueId) {
+          await mapRepo.insert({
+            variantId,
+            attributeValueId: mapReplaceValueId,
+          });
+        }
+      }
+    });
+
     const full = await this.productVariantsRepo.findOne({
       where: { id: variantId },
       relations: [

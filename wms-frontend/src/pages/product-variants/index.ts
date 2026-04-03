@@ -1,0 +1,2 @@
+export { ProductVariantsPage } from './ProductVariantsPage'
+

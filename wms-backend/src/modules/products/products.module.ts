@@ -8,6 +8,7 @@ import { Product } from '../../database/entities/product.entity';
 import { Unit } from '../../database/entities/unit.entity';
 import { ProductVariantsRepository } from './repositories/product-variants.repository';
 import { ProductsRepository } from './repositories/products.repository';
+import { ProductVariantsLookupController } from './product-variants-lookup.controller';
 import { ProductsController } from './products.controller';
 import { ProductsService } from './services/products.service';
 
@@ -22,7 +23,7 @@ import { ProductsService } from './services/products.service';
       AttributeValue,
     ]),
   ],
-  controllers: [ProductsController],
+  controllers: [ProductsController, ProductVariantsLookupController],
   providers: [ProductsService, ProductsRepository, ProductVariantsRepository],
   exports: [ProductsService, ProductsRepository, ProductVariantsRepository],
 })

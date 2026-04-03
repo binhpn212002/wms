@@ -5,6 +5,7 @@ export const ROUTES = {
   MASTER_DATA_ATTRIBUTES: '/master-data/attributes',
   MASTER_DATA_ATTRIBUTE_VALUES: '/master-data/attribute-values',
   PRODUCTS: '/products',
+  PRODUCT_VARIANTS: '/product-variants',
   WAREHOUSES: '/warehouses',
   SUPPLIERS: '/suppliers',
   INBOUND: '/inbound',

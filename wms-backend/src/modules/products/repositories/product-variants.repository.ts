@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, In, Not, Repository } from 'typeorm';
+import { Brackets, FindOptionsWhere, In, Not, Repository } from 'typeorm';
+import { ListResponseDto } from '../../../common/dto/list-response.dto';
 import { BaseRepository } from '../../../common/repositories/base.repository';
 import { ProductVariantAttributeValue } from '../../../database/entities/product-variant-attribute-value.entity';
 import { ProductVariant } from '../../../database/entities/product-variant.entity';
+import { ListProductVariantsQueryDto } from '../dto/list-product-variants-query.dto';
 
 @Injectable()
 export class ProductVariantsRepository extends BaseRepository<ProductVariant> {
@@ -44,38 +46,14 @@ export class ProductVariantsRepository extends BaseRepository<ProductVariant> {
     return this.repository.existsBy(where);
   }
 
-  async getSortedAttributeValueIdsForVariant(
+  async replaceAttributeMap(
     variantId: string,
-  ): Promise<string[]> {
-    const rows = await this.mapRepo.find({
-      where: { variantId },
-      order: { attributeValueId: 'ASC' },
-    });
-    return rows.map((r) => r.attributeValueId);
-  }
-
-  async findVariantIdsByProductId(productId: string): Promise<string[]> {
-    const rows = await this.repository.find({
-      where: { productId },
-      select: ['id'],
-    });
-    return rows.map((r) => r.id);
-  }
-
-  async replaceAttributeMaps(
-    variantId: string,
-    attributeValueIds: string[],
+    valueId: string | null,
   ): Promise<void> {
     await this.mapRepo.delete({ variantId });
-    if (attributeValueIds.length === 0) {
-      return;
+    if (valueId) {
+      await this.mapRepo.insert({ variantId, attributeValueId: valueId });
     }
-    await this.mapRepo.insert(
-      attributeValueIds.map((attributeValueId) => ({
-        variantId,
-        attributeValueId,
-      })),
-    );
   }
 
   async findByProductIds(productIds: string[]): Promise<ProductVariant[]> {
@@ -86,6 +64,121 @@ export class ProductVariantsRepository extends BaseRepository<ProductVariant> {
       where: { productId: In(productIds) },
       order: { sku: 'ASC' },
     });
+  }
+
+  async findManyByProductId(
+    productId: string,
+    query: ListProductVariantsQueryDto,
+  ): Promise<ListResponseDto<ProductVariant>> {
+    query.normalize();
+    const qb = this.repository
+      .createQueryBuilder('v')
+      .leftJoinAndSelect('v.attributeValueMaps', 'm')
+      .leftJoinAndSelect('m.attributeValue', 'av')
+      .leftJoinAndSelect('av.attribute', 'attr')
+      .where('v.product_id = :productId', { productId });
+
+    if (query.includeDeleted) {
+      qb.withDeleted();
+    }
+
+    if (query.active !== undefined) {
+      qb.andWhere('v.active = :active', { active: query.active });
+    }
+
+    if (query.q) {
+      qb.andWhere(
+        new Brackets((b) => {
+          b.where('v.sku ILIKE :q', { q: `%${query.q}%` }).orWhere(
+            'v.barcode ILIKE :q',
+            { q: `%${query.q}%` },
+          );
+        }),
+      );
+    }
+
+    qb.orderBy('v.sku', 'ASC');
+    qb.skip(query.skip).take(query.limit);
+
+    const [data, total] = await qb.getManyAndCount();
+    return ListResponseDto.create(data, total, query.page, query.limit);
+  }
+
+  async findManyLookup(
+    query: ListProductVariantsQueryDto,
+  ): Promise<ListResponseDto<ProductVariant>> {
+    query.normalize();
+    const qb = this.repository
+      .createQueryBuilder('v')
+      .innerJoinAndSelect('v.product', 'p')
+      .leftJoinAndSelect('v.attributeValueMaps', 'm')
+      .leftJoinAndSelect('m.attributeValue', 'av')
+      .leftJoinAndSelect('av.attribute', 'attr');
+
+    if (query.includeDeleted) {
+      qb.withDeleted();
+    }
+
+    if (query.productId) {
+      qb.andWhere('v.product_id = :productId', { productId: query.productId });
+    }
+
+    if (query.active !== undefined) {
+      qb.andWhere('v.active = :active', { active: query.active });
+    }
+
+    if (query.q) {
+      qb.andWhere(
+        new Brackets((b) => {
+          b.where('v.sku ILIKE :q', { q: `%${query.q}%` }).orWhere(
+            'v.barcode ILIKE :q',
+            { q: `%${query.q}%` },
+          );
+        }),
+      );
+    }
+
+    qb.orderBy('v.sku', 'ASC');
+    qb.skip(query.skip).take(query.limit);
+
+    const [data, total] = await qb.getManyAndCount();
+    return ListResponseDto.create(data, total, query.page, query.limit);
+  }
+
+  /** Variant khác (cùng product) đang giữ valueId này. */
+  async findVariantIdHoldingValueOnProduct(
+    productId: string,
+    valueId: string,
+    excludeVariantId?: string,
+  ): Promise<string | null> {
+    const qb = this.repository
+      .createQueryBuilder('v')
+      .innerJoin('v.attributeValueMaps', 'm')
+      .where('v.product_id = :productId', { productId })
+      .andWhere('m.attribute_value_id = :valueId', { valueId });
+    if (excludeVariantId) {
+      qb.andWhere('v.id != :excludeVariantId', { excludeVariantId });
+    }
+    const row = await qb.getOne();
+    return row?.id ?? null;
+  }
+
+  /** Tìm một variant “default” (không có dòng map) khác excludeVariantId. */
+  async findFirstDefaultVariantId(
+    productId: string,
+    excludeVariantId?: string,
+  ): Promise<string | null> {
+    const qb = this.repository
+      .createQueryBuilder('v')
+      .where('v.product_id = :productId', { productId })
+      .andWhere(
+        'NOT EXISTS (SELECT 1 FROM product_variant_attribute_values m WHERE m.variant_id = v.id)',
+      );
+    if (excludeVariantId) {
+      qb.andWhere('v.id != :excludeVariantId', { excludeVariantId });
+    }
+    const row = await qb.getOne();
+    return row?.id ?? null;
   }
 
   async softDeleteById(id: string): Promise<void> {

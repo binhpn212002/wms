@@ -17,7 +17,14 @@ const MENU_ITEMS: MenuProps['items'] = [
       { key: ROUTES.MASTER_DATA_ATTRIBUTE_VALUES, label: 'Giá trị thuộc tính' },
     ],
   },
-  { key: ROUTES.PRODUCTS, label: 'Sản phẩm' },
+  {
+    key: 'products',
+    label: 'Sản phẩm',
+    children: [
+      { key: ROUTES.PRODUCTS, label: 'Sản phẩm' },
+      { key: ROUTES.PRODUCT_VARIANTS, label: 'Biến thể / SKU' },
+    ],
+  },
   { key: ROUTES.WAREHOUSES, label: 'Kho & vị trí' },
   { key: ROUTES.SUPPLIERS, label: 'Nhà cung cấp' },
   { key: ROUTES.INBOUND, label: 'Nhập kho' },
@@ -43,7 +50,7 @@ export function MainLayout() {
         <Menu
           mode="inline"
           selectedKeys={[location.pathname === '/' ? ROUTES.HOME : location.pathname]}
-          defaultOpenKeys={['master-data']}
+          defaultOpenKeys={['master-data', 'products']}
           items={MENU_ITEMS}
           onClick={onMenuClick}
           style={{ borderInlineEnd: 0, height: '100%' }}

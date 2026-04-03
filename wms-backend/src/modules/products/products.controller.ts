@@ -15,6 +15,7 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CreateProductDto } from './dto/create-product.dto';
 import { CreateProductVariantDto } from './dto/create-product-variant.dto';
 import { GetProductQueryDto } from './dto/get-product-query.dto';
+import { ListProductVariantsQueryDto } from './dto/list-product-variants-query.dto';
 import { ListProductsQueryDto } from './dto/list-products-query.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { UpdateProductVariantDto } from './dto/update-product-variant.dto';
@@ -36,6 +37,15 @@ export class ProductsController {
   @ApiOperation({ summary: 'Tạo sản phẩm kèm ít nhất một biến thể' })
   create(@Body() dto: CreateProductDto) {
     return this.productsService.create(dto);
+  }
+
+  @Get(':id/variants')
+  @ApiOperation({ summary: 'Danh sách biến thể theo sản phẩm (lọc, phân trang)' })
+  listVariants(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query() query: ListProductVariantsQueryDto,
+  ) {
+    return this.productsService.listVariants(id, query);
   }
 
   @Get(':id')

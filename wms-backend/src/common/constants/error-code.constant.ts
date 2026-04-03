@@ -32,10 +32,12 @@ export const ErrorCode = {
 
   // Product variant
   VARIANT_NOT_FOUND: 'VARIANT_NOT_FOUND',
-  VARIANT_SKU_DUPLICATE: 'VARIANT_SKU_DUPLICATE',
-  VARIANT_BARCODE_DUPLICATE: 'VARIANT_BARCODE_DUPLICATE',
-  VARIANT_ATTRIBUTE_INVALID: 'VARIANT_ATTRIBUTE_INVALID',
-  VARIANT_COMBO_DUPLICATE: 'VARIANT_COMBO_DUPLICATE',
+  SKU_CONFLICT: 'SKU_CONFLICT',
+  BARCODE_CONFLICT: 'BARCODE_CONFLICT',
+  VARIANT_COMBINATION_CONFLICT: 'VARIANT_COMBINATION_CONFLICT',
+  ATTRIBUTE_VALUE_INVALID: 'ATTRIBUTE_VALUE_INVALID',
+  ATTRIBUTE_VALUE_MISMATCH: 'ATTRIBUTE_VALUE_MISMATCH',
+  VARIANT_RULE_VIOLATION: 'VARIANT_RULE_VIOLATION',
   VARIANT_IN_USE: 'VARIANT_IN_USE',
 
   // Supplier
@@ -135,12 +137,16 @@ export const ERROR_MESSAGE: Record<ErrorCodeValue, string> = {
   [ErrorCode.PRODUCT_CODE_DUPLICATE]: 'Mã sản phẩm đã tồn tại',
 
   [ErrorCode.VARIANT_NOT_FOUND]: 'Không tìm thấy biến thể',
-  [ErrorCode.VARIANT_SKU_DUPLICATE]: 'Mã SKU đã tồn tại',
-  [ErrorCode.VARIANT_BARCODE_DUPLICATE]: 'Mã vạch đã tồn tại',
-  [ErrorCode.VARIANT_ATTRIBUTE_INVALID]:
-    'Tập giá trị thuộc tính không hợp lệ (trùng loại, thiếu hoặc không khả dụng)',
-  [ErrorCode.VARIANT_COMBO_DUPLICATE]:
-    'Đã có biến thể khác cùng tổ hợp giá trị thuộc tính',
+  [ErrorCode.SKU_CONFLICT]: 'Mã SKU đã tồn tại',
+  [ErrorCode.BARCODE_CONFLICT]: 'Mã vạch đã tồn tại',
+  [ErrorCode.VARIANT_COMBINATION_CONFLICT]:
+    'Đã có biến thể khác cùng tổ hợp giá trị thuộc tính hoặc trùng biến thể mặc định',
+  [ErrorCode.ATTRIBUTE_VALUE_INVALID]:
+    'Giá trị thuộc tính không tồn tại hoặc không khả dụng',
+  [ErrorCode.ATTRIBUTE_VALUE_MISMATCH]:
+    'Cặp thuộc tính và giá trị không khớp hoặc chỉ gửi một phần',
+  [ErrorCode.VARIANT_RULE_VIOLATION]:
+    'Dữ liệu catalog biến thể không thỏa điều kiện (giá, ngưỡng tồn, …)',
   [ErrorCode.VARIANT_IN_USE]:
     'Không thể xóa biến thể khi còn tồn/chứng từ tham chiếu',
 

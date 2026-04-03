@@ -1,16 +1,25 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
+  ArrayMaxSize,
   IsArray,
+  IsBoolean,
+  IsNumber,
   IsOptional,
   IsString,
   IsUUID,
+  Length,
   Matches,
   MaxLength,
+  Min,
+  Validate,
+  ValidateIf,
 } from 'class-validator';
+import { CreateVariantAttributePairConstraint } from './create-variant-attribute-pair.constraint';
 
 export class CreateProductVariantDto {
   @ApiProperty({ example: 'SKU-001' })
+  @Validate(CreateVariantAttributePairConstraint)
   @Transform(({ value }) =>
     typeof value === 'string' ? value.trim().toUpperCase() : value,
   )
@@ -34,12 +43,69 @@ export class CreateProductVariantDto {
   @MaxLength(128)
   barcode?: string;
 
-  @ApiProperty({
-    type: [String],
-    description: 'Danh sách attribute_value_id (có thể rỗng cho SKU mặc định)',
-    example: [],
+  @ApiPropertyOptional({ default: true })
+  @IsOptional()
+  @IsBoolean()
+  active?: boolean;
+
+  @ApiPropertyOptional({ example: 'VND' })
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (value === undefined || value === null || value === '') {
+      return undefined;
+    }
+    return String(value).trim().toUpperCase();
   })
+  @IsString()
+  @Length(3, 3)
+  @Matches(/^[A-Z]{3}$/, { message: 'currencyCode phải là mã ISO-4217 3 ký tự' })
+  currencyCode?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  listPrice?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  costPrice?: number;
+
+  @ApiPropertyOptional({ type: [String], maxItems: 10 })
+  @IsOptional()
   @IsArray()
-  @IsUUID('4', { each: true })
-  attributeValueIds: string[];
+  @ArrayMaxSize(10)
+  @IsString({ each: true })
+  @MaxLength(2048, { each: true })
+  imageUrls?: string[];
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 3 })
+  @Min(0)
+  minStock?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 3 })
+  @Min(0)
+  maxStock?: number;
+
+  @ApiPropertyOptional({ format: 'uuid' })
+  @ValidateIf(
+    (o) => o.attributeId !== undefined && o.attributeId !== null,
+  )
+  @IsUUID('4')
+  attributeId?: string | null;
+
+  @ApiPropertyOptional({ format: 'uuid' })
+  @ValidateIf((o) => o.valueId !== undefined && o.valueId !== null)
+  @IsUUID('4')
+  valueId?: string | null;
 }
