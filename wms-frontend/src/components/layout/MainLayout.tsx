@@ -14,7 +14,6 @@ const MENU_ITEMS: MenuProps['items'] = [
       { key: ROUTES.MASTER_DATA_CATEGORIES, label: 'Danh mục' },
       { key: ROUTES.MASTER_DATA_UNITS, label: 'Đơn vị tính' },
       { key: ROUTES.MASTER_DATA_ATTRIBUTES, label: 'Thuộc tính' },
-      { key: ROUTES.MASTER_DATA_ATTRIBUTE_VALUES, label: 'Giá trị thuộc tính' },
     ],
   },
   {
@@ -29,7 +28,6 @@ const MENU_ITEMS: MenuProps['items'] = [
   { key: ROUTES.SUPPLIERS, label: 'Nhà cung cấp' },
   { key: ROUTES.INBOUND, label: 'Nhập kho' },
   { key: ROUTES.OUTBOUND, label: 'Xuất kho' },
-  { key: ROUTES.TRANSFERS, label: 'Chuyển kho' },
   {
     key: 'inventory-group',
     label: 'Tồn kho',
