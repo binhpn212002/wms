@@ -63,6 +63,11 @@ export class ProductVariantsRepository extends BaseRepository<ProductVariant> {
     return this.repository.find({
       where: { productId: In(productIds) },
       order: { sku: 'ASC' },
+      relations: [
+        'attributeValueMaps',
+        'attributeValueMaps.attributeValue',
+        'attributeValueMaps.attributeValue.attribute',
+      ],
     });
   }
 

@@ -1,7 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import {
-  ArrayMinSize,
   IsBoolean,
   IsNotEmpty,
   IsOptional,
@@ -48,10 +47,10 @@ export class CreateProductDto {
 
   @ApiProperty({
     type: [CreateProductVariantDto],
-    description: 'Ít nhất một biến thể (MVP)',
+    description: 'Danh sách biến thể (tuỳ chọn)',
   })
+  @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => CreateProductVariantDto)
-  @ArrayMinSize(1)
-  variants: CreateProductVariantDto[];
+  variants?: CreateProductVariantDto[];
 }

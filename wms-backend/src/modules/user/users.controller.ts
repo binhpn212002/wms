@@ -23,11 +23,9 @@ import { ListUsersQueryDto } from './dto/list-users-query.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersService } from './services/users.service';
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 
 @ApiTags('users')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard )
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}

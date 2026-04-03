@@ -2,6 +2,7 @@ import type {
   CreateProductRequest,
   CreateProductVariantRequest,
   GetProductQuery,
+  ListProductVariantsQuery,
   ListProductsQuery,
   ListResponse,
   Product,
@@ -30,6 +31,11 @@ export const productsService = {
 
   remove(id: string) {
     return deleteJson(`/products/${id}`)
+  },
+
+  /** Tra cứu biến thể (SKU) kèm `product` tối giản — dùng cho màn /product-variants. */
+  lookupVariants(params?: ListProductVariantsQuery) {
+    return getJson<ListResponse<ProductVariant>>('/product-variants', { params })
   },
 
   createVariant(productId: string, body: CreateProductVariantRequest) {

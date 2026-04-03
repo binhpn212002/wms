@@ -8,6 +8,13 @@ export class AttributeValueEmbedDto {
   name: string;
 }
 
+/** Loại thuộc tính (Size, Màu, …) gắn với giá trị trên biến thể. */
+export class AttributeEmbedDto {
+  id: string;
+  code: string;
+  name: string;
+}
+
 export class ProductMinimalEmbedDto {
   id: string;
   code: string;
@@ -31,6 +38,8 @@ export class ProductVariantResponseDto {
   deleted_at: Date | null;
   attribute_id: string | null;
   value_id: string | null;
+  /** Thuộc tính (nhãn biến thể), null nếu biến thể mặc định. */
+  attribute: AttributeEmbedDto | null;
   attribute_value: AttributeValueEmbedDto | null;
   /** Chỉ dùng cho GET /product-variants lookup */
   product?: ProductMinimalEmbedDto;
@@ -67,10 +76,15 @@ export class ProductVariantResponseDto {
         code: av.code,
         name: av.name,
       };
+      const attr = av.attribute;
+      d.attribute = attr
+        ? { id: attr.id, code: attr.code, name: attr.name }
+        : null;
     } else {
       d.attribute_id = null;
       d.value_id = null;
       d.attribute_value = null;
+      d.attribute = null;
     }
     return d;
   }
@@ -97,6 +111,7 @@ export class ProductVariantResponseDto {
     d.attribute_id = null;
     d.value_id = null;
     d.attribute_value = null;
+    d.attribute = null;
     return d;
   }
 }

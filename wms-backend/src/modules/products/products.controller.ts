@@ -34,7 +34,7 @@ export class ProductsController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Tạo sản phẩm kèm ít nhất một biến thể' })
+  @ApiOperation({ summary: 'Tạo sản phẩm' })
   create(@Body() dto: CreateProductDto) {
     return this.productsService.create(dto);
   }

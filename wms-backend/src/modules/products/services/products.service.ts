@@ -216,11 +216,11 @@ export class ProductsService {
         return m;
       }, new Map<string, ProductVariant[]>());
     }
-    const data = res.data.map((p) => {
+      const data = res.data.map((p) => {
       const opts = query.includeVariants
         ? {
             variants: (variantByProduct.get(p.id) ?? []).map((v) =>
-              ProductVariantResponseDto.shallow(v),
+              ProductVariantResponseDto.fromEntity(v, v.attributeValueMaps),
             ),
           }
         : {};
@@ -291,9 +291,12 @@ export class ProductsService {
     if (await this.productsRepo.existsActiveByCode(code)) {
       throw new ProductCodeDuplicateException();
     }
-    this.assertIntraCreateVariantUniques(dto.variants);
-    for (const vd of dto.variants) {
-      await this.prepareVariantDtoForCreateProduct(vd);
+    const variants = dto.variants ?? [];
+    if (variants.length > 0) {
+      this.assertIntraCreateVariantUniques(variants);
+      for (const vd of variants) {
+        await this.prepareVariantDtoForCreateProduct(vd);
+      }
     }
 
     const newProductId = await this.dataSource.transaction(async (manager) => {
@@ -310,7 +313,7 @@ export class ProductsService {
       });
       await productRepo.save(product);
 
-      for (const vd of dto.variants) {
+      for (const vd of variants) {
         const valueId = this.createDtoResolvedValueId(vd);
         const variant = variantRepo.create({
           productId: product.id,
