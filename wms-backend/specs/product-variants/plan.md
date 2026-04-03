@@ -1,5 +1,10 @@
 # Kế hoạch triển khai — Biến thể sản phẩm (product variants)
 
+## 0. Tài liệu & quy ước dự án
+
+- Cấu trúc module NestJS + thư mục: [plan.promt.md](../../promt/plan.promt.md) (base `/api/v1`, path **kebab-case** plural, list query `page` / `pageSize`, response list gợi ý `{ items, total, page, pageSize }`).
+- Luồng **check tồn** sau khi đã biết SKU / `variantId`: [inventory-check/basic-design.md](../inventory-check/basic-design.md), [inventory-check/detail-design.md](../inventory-check/detail-design.md) — tồn đọc từ `stock_balances`, **không** denormalize `currentQuantity` trên `product_variants` (đồng bộ [basic-design](./basic-design.md)).
+
 ## 1. Xác định module
 
 | Mục | Giá trị |
@@ -8,7 +13,7 @@
 | Triển khai NestJS | Mở rộng module **`products`** hiện có — route lồng theo [detail-design.md](./detail-design.md) (`/products/:productId/variants`); **không** tạo `src/modules/product-variants/` trừ khi tách controller/service sau này vì quy mô. |
 | Tài liệu | [basic-design.md](./basic-design.md), [detail-design.md](./detail-design.md); nền tảng bảng tại [products/detail-design.md](../products/detail-design.md) |
 | Base API (nested) | Global prefix `api/v1` — `GET|POST /products/:productId/variants`, `PATCH|DELETE /products/:productId/variants/:variantId` |
-| API tùy chọn (tra cứu) | `GET /api/v1/product-variants` — segment plural kebab-case theo [plan.promt.md](../../promt/plan.promt.md) |
+| API tra cứu SKU (master) | `GET /api/v1/product-variants` — segment plural kebab-case theo [plan.promt.md](../../promt/plan.promt.md); bổ trợ bước 1 trước khi gọi `GET /inventory-check/*` (bước 2 — số lượng tồn) |
 
 ## 2. Mục tiêu theo MVP (detail-design)
 
@@ -18,6 +23,14 @@
 - **List variant**: `GET /products/:productId/variants` với query gợi ý `q`, `active`, `includeDeleted`.
 - **Xóa mềm**: `DELETE` → 204; 409 `VARIANT_IN_USE` khi còn tham chiếu kho/chứng từ; các mã lỗi khác theo bảng trong [detail-design](./detail-design.md).
 - **Không** lưu tồn thực tế trên variant — chỉ ngưỡng cảnh báo; tồn theo Inventory.
+
+### Liên kết [inventory-check](../inventory-check/detail-design.md)
+
+| Bước | API / dữ liệu | Vai trò |
+|------|----------------|--------|
+| 1 | `GET /product-variants?q=…` | Resolve **variantId** (+ `product` minimal) từ SKU hoặc barcode — thuộc module `products` (`ProductVariantsLookupController`). |
+| 2 | `GET /inventory-check/lookup` hoặc `GET /inventory-check/variants/:variantId` | Đọc **quantity** từ `stock_balances` (filter kho/vị trí, `mode` summary/details). |
+| — | `GET /inventory/balances` ([inventory detail](../inventory/detail-design.md)) | Cùng nguồn tồn; inventory-check là use-case tối ưu quét barcode + embed; tránh duplicate business rules khi implement (DRY repository/query). |
 
 ## 3. Cấu trúc thư mục (theo [plan.promt.md](../../promt/plan.promt.md) + thực tế repo)
 
@@ -37,9 +50,10 @@ src/
 └── modules/
     └── products/
         ├── products.module.ts
-        ├── products.controller.ts                  # thêm GET list variants; endpoint tùy chọn product-variants
+        ├── products.controller.ts                  # GET :id/variants; POST/PATCH/DELETE nested variants
+        ├── product-variants-lookup.controller.ts # GET /product-variants (tra cứu SKU/barcode — ApiTags product-variants)
         ├── services/
-        │   └── products.service.ts                 # transaction variant + replace map; validation cặp attribute
+        │   └── products.service.ts                 # transaction variant + replace map; validation cặp attribute; lookupVariants
         ├── repositories/
         │   ├── products.repository.ts
         │   └── product-variants.repository.ts      # list theo product + filter active/q; join attribute value
@@ -62,8 +76,8 @@ src/
 5. **ProductsService**:
    - `createVariant` / `updateVariant`: validate product tồn tại; SKU unique; kiểm tra `valueId` tồn tại và khớp `attributeId`; không trùng `valueId` với variant khác cùng product; default variant không trùng nếu policy cấm (409 `VARIANT_COMBINATION_CONFLICT`).
    - **Transaction**: ghi `product_variants` rồi replace 0–1 dòng `product_variant_attribute_values`.
-6. **Controller**: thêm `GET :id/variants` + query DTO; đảm bảo `POST/PATCH` response khớp spec (`productId`, `attributeValue?`).
-7. **(Tùy chọn)** `ProductVariantsLookupController` hoặc thêm route trong `products` module: `GET /product-variants` với `q`, `active`, `includeDeleted`, trả kèm `product` minimal.
+6. **Controller**: `GET :id/variants` + query DTO; `POST/PATCH` response khớp spec (`productId`, `attributeValue?`).
+7. **`ProductVariantsLookupController`**: `GET /product-variants` — `q`, `active`, `includeDeleted`, phân trang; response khớp gợi ý [plan.promt.md](../../promt/plan.promt.md) (`items`, `total`, `page`, `pageSize` nếu dự án đã chuẩn hóa list).
 8. **Error filter / exceptions**: map HTTP 404/409/422 với `code` trong bảng detail-design.
 
 ## 5. Phụ thuộc / rủi ro

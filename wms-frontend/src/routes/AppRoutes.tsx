@@ -3,7 +3,7 @@ import { MainLayout } from '../components'
 import { ROUTES } from '../constants'
 import { HomePage } from '../pages/home'
 import { InboundPage } from '../pages/inbound'
-import { InventoryPage } from '../pages/inventory'
+import { InventoryCheckPage, InventoryPage } from '../pages/inventory'
 import { OutboundPage } from '../pages/outbound'
 import { ProductsPage } from '../pages/products'
 import { ProductVariantsPage } from '../pages/product-variants'
@@ -32,6 +32,7 @@ export function AppRoutes() {
         <Route path={ROUTES.OUTBOUND} element={<OutboundPage />} />
         <Route path={ROUTES.TRANSFERS} element={<TransfersPage />} />
         <Route path={ROUTES.INVENTORY} element={<InventoryPage />} />
+        <Route path={ROUTES.INVENTORY_CHECK} element={<InventoryCheckPage />} />
         <Route path={ROUTES.REPORTS} element={<ReportsPage />} />
         <Route path={ROUTES.USERS} element={<UsersPage />} />
       </Route>

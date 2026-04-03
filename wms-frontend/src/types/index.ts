@@ -114,10 +114,19 @@ export type {
 } from './transfer'
 export type {
   BalanceSortField,
+  StockBalanceItem,
   ListBalancesQuery,
   SummaryQuery,
   ListInventoryMovementsQuery,
   InventoryBalancesResponse,
   InventorySummaryResponse,
   InventoryMovementsResponse,
+  InventoryCheckMode,
+  InventoryCheckLookupQuery,
+  InventoryCheckVariantQuery,
+  InventoryCheckProductEmbed,
+  InventoryCheckBreakdownWarehouse,
+  InventoryCheckLine,
+  InventoryCheckItem,
+  InventoryCheckLookupResponse,
 } from './inventory'

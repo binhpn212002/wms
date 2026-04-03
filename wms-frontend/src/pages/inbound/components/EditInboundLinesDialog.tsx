@@ -4,6 +4,7 @@ import {
   Modal,
   Select,
   Space,
+  Spin,
   Table,
   Typography,
   message,
@@ -50,6 +51,8 @@ export function EditInboundLinesDialog({
 }: EditInboundLinesDialogProps) {
   const { Text } = Typography
   const [submitting, setSubmitting] = useState(false)
+  const [detailLoading, setDetailLoading] = useState(false)
+  const [detailDoc, setDetailDoc] = useState<InboundDocument | null>(null)
 
   const [lines, setLines] = useState<InboundLineInput[]>([])
 
@@ -66,26 +69,58 @@ export function EditInboundLinesDialog({
   const variantQ = useDebouncedValue(variantQInput, 300)
   const [variantsLoading, setVariantsLoading] = useState(false)
 
+  /** Danh sách API không kèm `lines`; phải gọi findOne để có dòng chứng từ. */
   useEffect(() => {
-    if (!open || !inbound) return
-    setLines(normalizeLines(inbound.lines))
-  }, [open, inbound])
+    if (!open) {
+      setDetailDoc(null)
+      setLines([])
+      return
+    }
+    if (!inbound?.id) {
+      setDetailDoc(null)
+      setLines([])
+      return
+    }
+    let cancelled = false
+    setDetailLoading(true)
+    void inboundService
+      .findOne(inbound.id)
+      .then((doc) => {
+        if (cancelled) return
+        setDetailDoc(doc)
+        setLines(normalizeLines(doc.lines))
+      })
+      .catch(() => {
+        if (cancelled) return
+        message.error('Không tải được chi tiết phiếu nhập')
+        setDetailDoc(null)
+        setLines([])
+      })
+      .finally(() => {
+        if (!cancelled) setDetailLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [open, inbound?.id])
+
+  const doc = detailDoc ?? inbound
 
   const loadWarehouse = useCallback(async () => {
-    if (!open || !inbound) return
+    if (!open || !doc?.warehouseId) return
     try {
-      const w = await warehousesService.findOne(inbound.warehouseId)
+      const w = await warehousesService.findOne(doc.warehouseId)
       setWarehouse(w)
     } catch {
       setWarehouse(null)
     }
-  }, [open, inbound])
+  }, [open, doc])
 
   const loadBins = useCallback(async () => {
-    if (!open || !inbound) return
+    if (!open || !doc?.warehouseId) return
     setBinsLoading(true)
     try {
-      const res = await warehousesService.listLocations(inbound.warehouseId, {
+      const res = await warehousesService.listLocations(doc.warehouseId, {
         view: 'flat',
         type: 'bin',
         q: binQ || undefined,
@@ -102,7 +137,7 @@ export function EditInboundLinesDialog({
     } finally {
       setBinsLoading(false)
     }
-  }, [open, inbound, binQ])
+  }, [open, doc, binQ])
 
   const loadVariants = useCallback(async () => {
     setVariantsLoading(true)
@@ -128,14 +163,14 @@ export function EditInboundLinesDialog({
   }, [variantQ])
 
   useEffect(() => {
-    if (!open || !inbound) return
+    if (!open || !doc?.warehouseId || detailLoading) return
     void loadWarehouse()
-  }, [open, inbound, loadWarehouse])
+  }, [open, doc?.warehouseId, detailLoading, loadWarehouse])
 
   useEffect(() => {
-    if (!open || !inbound) return
+    if (!open || !doc?.warehouseId || detailLoading) return
     void loadBins()
-  }, [open, inbound, loadBins])
+  }, [open, doc?.warehouseId, detailLoading, loadBins])
 
   useEffect(() => {
     if (!open) return
@@ -174,7 +209,7 @@ export function EditInboundLinesDialog({
   }
 
   const handleSave = async () => {
-    if (!inbound) return
+    if (!doc?.id) return
     const cleaned = lines
       .map((l) => ({
         ...l,
@@ -199,7 +234,7 @@ export function EditInboundLinesDialog({
 
     setSubmitting(true)
     try {
-      await inboundService.replaceLines(inbound.id, { lines: cleaned })
+      await inboundService.replaceLines(doc.id, { lines: cleaned })
       message.success('Đã lưu dòng phiếu nhập')
       onSuccess()
       onClose()
@@ -221,24 +256,28 @@ export function EditInboundLinesDialog({
 
   return (
     <Modal
-      title={`Dòng phiếu nhập${inbound ? ` — ${inbound.documentNo}` : ''}`}
+      title={`Dòng phiếu nhập${doc ? ` — ${doc.documentNo}` : ''}`}
       open={open}
       onOk={handleSave}
       onCancel={onClose}
       okText="Lưu"
       cancelText="Hủy"
       confirmLoading={submitting}
+      okButtonProps={{ disabled: detailLoading || !detailDoc }}
       destroyOnHidden
       width={1000}
     >
-      <Space direction="vertical" style={{ width: '100%' }} size={12}>
+      <Spin spinning={detailLoading} tip="Đang tải chi tiết phiếu…">
+        <Space direction="vertical" style={{ width: '100%' }} size={12}>
         <div>
           <Text type="secondary">
-            Kho: {warehouse ? `${warehouse.code} — ${warehouse.name}` : inbound?.warehouseId}
+            Kho: {warehouse ? `${warehouse.code} — ${warehouse.name}` : doc?.warehouseId}
           </Text>
         </div>
         <Space wrap>
-          <Button onClick={addEmptyLine}>Thêm dòng</Button>
+          <Button onClick={addEmptyLine} disabled={detailLoading}>
+            Thêm dòng
+          </Button>
         </Space>
 
         <Table<Row>
@@ -322,7 +361,8 @@ export function EditInboundLinesDialog({
             },
           ]}
         />
-      </Space>
+        </Space>
+      </Spin>
     </Modal>
   )
 }

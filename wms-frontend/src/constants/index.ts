@@ -12,6 +12,7 @@ export const ROUTES = {
   OUTBOUND: '/outbound',
   TRANSFERS: '/transfers',
   INVENTORY: '/inventory',
+  INVENTORY_CHECK: '/inventory/check',
   REPORTS: '/reports',
   USERS: '/users',
 } as const

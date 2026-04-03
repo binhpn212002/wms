@@ -30,7 +30,14 @@ const MENU_ITEMS: MenuProps['items'] = [
   { key: ROUTES.INBOUND, label: 'Nhập kho' },
   { key: ROUTES.OUTBOUND, label: 'Xuất kho' },
   { key: ROUTES.TRANSFERS, label: 'Chuyển kho' },
-  { key: ROUTES.INVENTORY, label: 'Tồn kho' },
+  {
+    key: 'inventory-group',
+    label: 'Tồn kho',
+    children: [
+      { key: ROUTES.INVENTORY, label: 'Tổng quan' },
+      { key: ROUTES.INVENTORY_CHECK, label: 'Check hàng tồn' },
+    ],
+  },
   { key: ROUTES.REPORTS, label: 'Báo cáo' },
   { key: ROUTES.USERS, label: 'Người dùng' },
 ]
@@ -50,7 +57,7 @@ export function MainLayout() {
         <Menu
           mode="inline"
           selectedKeys={[location.pathname === '/' ? ROUTES.HOME : location.pathname]}
-          defaultOpenKeys={['master-data', 'products']}
+          defaultOpenKeys={['master-data', 'products', 'inventory-group']}
           items={MENU_ITEMS}
           onClick={onMenuClick}
           style={{ borderInlineEnd: 0, height: '100%' }}

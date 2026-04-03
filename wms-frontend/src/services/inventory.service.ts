@@ -1,5 +1,9 @@
 import type {
   InventoryBalancesResponse,
+  InventoryCheckItem,
+  InventoryCheckLookupQuery,
+  InventoryCheckLookupResponse,
+  InventoryCheckVariantQuery,
   InventoryMovementsResponse,
   InventorySummaryResponse,
   ListBalancesQuery,
@@ -33,5 +37,21 @@ export const inventoryService = {
     return getJson<InventoryMovementsResponse>('/inventory/movements', {
       params,
     })
+  },
+
+  inventoryCheckLookup(params: InventoryCheckLookupQuery) {
+    return getJson<InventoryCheckLookupResponse>('/inventory-check/lookup', {
+      params,
+    })
+  },
+
+  inventoryCheckByVariant(
+    variantId: string,
+    params?: InventoryCheckVariantQuery,
+  ) {
+    return getJson<InventoryCheckItem>(
+      `/inventory-check/variants/${variantId}`,
+      { params },
+    )
   },
 }

@@ -4,6 +4,7 @@ import { Repository, SelectQueryBuilder } from 'typeorm';
 import { ListResponseDto } from '../../../common/dto/list-response.dto';
 import { SortOrder } from '../../../common/dto/page-option.dto';
 import { BaseRepository } from '../../../common/repositories/base.repository';
+import { Location } from '../../../database/entities/location.entity';
 import { Product } from '../../../database/entities/product.entity';
 import { ProductVariant } from '../../../database/entities/product-variant.entity';
 import { StockBalance } from '../../../database/entities/stock-balance.entity';
@@ -17,6 +18,36 @@ import {
   SummaryByProductItemDto,
   SummaryByWarehouseItemDto,
 } from '../dto/summary-response.dto';
+
+export interface InventoryCheckVariantRow {
+  variantId: string;
+  productId: string;
+  sku: string;
+  barcode: string | null;
+  productCode: string;
+  productName: string;
+  defaultUomId: string;
+}
+
+export interface InventoryCheckSummaryAggregateRow {
+  variantId: string;
+  warehouseId: string;
+  warehouseCode: string;
+  warehouseName: string;
+  quantity: string;
+}
+
+export interface InventoryCheckDetailLineRow {
+  variantId: string;
+  warehouseId: string;
+  warehouseCode: string;
+  warehouseName: string;
+  locationId: string;
+  locationCode: string;
+  locationName: string | null;
+  quantity: string;
+  balanceUpdatedAt: Date;
+}
 
 @Injectable()
 export class StockBalancesRepository extends BaseRepository<StockBalance> {
@@ -240,5 +271,178 @@ export class StockBalancesRepository extends BaseRepository<StockBalance> {
       .where('sb.warehouseId = :warehouseId', { warehouseId })
       .andWhere('CAST(sb.quantity AS DECIMAL) > 0')
       .getExists();
+  }
+
+  /** Variant còn hiệu lực khớp SKU hoặc barcode (chính xác, có phân biệt hoa thường). */
+  async findActiveVariantRowsBySkuOrBarcode(
+    q: string,
+  ): Promise<InventoryCheckVariantRow[]> {
+    const raw = await this.repository.manager
+      .createQueryBuilder(ProductVariant, 'v')
+      .innerJoin(Product, 'p', 'p.id = v.productId AND p.deletedAt IS NULL')
+      .where('v.deletedAt IS NULL')
+      .andWhere(
+        '(LOWER(v.sku) = LOWER(:q) OR (v.barcode IS NOT NULL AND LOWER(v.barcode) = LOWER(:q)))',
+        { q },
+      )
+      .select('v.id', 'variantId')
+      .addSelect('v.productId', 'productId')
+      .addSelect('v.sku', 'sku')
+      .addSelect('v.barcode', 'barcode')
+      .addSelect('p.code', 'productCode')
+      .addSelect('p.name', 'productName')
+      .addSelect('p.defaultUomId', 'defaultUomId')
+      .orderBy('v.sku', 'ASC')
+      .getRawMany();
+
+    return raw.map((r) => ({
+      variantId: r.variantId,
+      productId: r.productId,
+      sku: r.sku,
+      barcode: r.barcode ?? null,
+      productCode: r.productCode,
+      productName: r.productName,
+      defaultUomId: r.defaultUomId,
+    }));
+  }
+
+  async findActiveVariantRowById(
+    variantId: string,
+  ): Promise<InventoryCheckVariantRow | null> {
+    const raw = await this.repository.manager
+      .createQueryBuilder(ProductVariant, 'v')
+      .innerJoin(Product, 'p', 'p.id = v.productId AND p.deletedAt IS NULL')
+      .where('v.deletedAt IS NULL')
+      .andWhere('v.id = :variantId', { variantId })
+      .select('v.id', 'variantId')
+      .addSelect('v.productId', 'productId')
+      .addSelect('v.sku', 'sku')
+      .addSelect('v.barcode', 'barcode')
+      .addSelect('p.code', 'productCode')
+      .addSelect('p.name', 'productName')
+      .addSelect('p.defaultUomId', 'defaultUomId')
+      .getRawOne();
+
+    if (!raw) {
+      return null;
+    }
+    return {
+      variantId: raw.variantId,
+      productId: raw.productId,
+      sku: raw.sku,
+      barcode: raw.barcode ?? null,
+      productCode: raw.productCode,
+      productName: raw.productName,
+      defaultUomId: raw.defaultUomId,
+    };
+  }
+
+  /** Tổng tồn theo variant + kho (để breakdown). */
+  async listInventoryCheckSummaryAggregates(
+    variantIds: string[],
+    warehouseId?: string,
+    locationId?: string,
+  ): Promise<InventoryCheckSummaryAggregateRow[]> {
+    if (variantIds.length === 0) {
+      return [];
+    }
+    const qb = this.repository
+      .createQueryBuilder('sb')
+      .innerJoin(
+        Warehouse,
+        'w',
+        'w.id = sb.warehouseId AND w.deletedAt IS NULL',
+      )
+      .innerJoin(
+        Location,
+        'loc',
+        'loc.id = sb.locationId AND loc.deletedAt IS NULL',
+      )
+      .where('sb.variantId IN (:...variantIds)', { variantIds });
+
+    if (warehouseId) {
+      qb.andWhere('sb.warehouseId = :warehouseId', { warehouseId });
+    }
+    if (locationId) {
+      qb.andWhere('sb.locationId = :locationId', { locationId });
+    }
+
+    qb.select('sb.variantId', 'variantId')
+      .addSelect('sb.warehouseId', 'warehouseId')
+      .addSelect('w.code', 'warehouseCode')
+      .addSelect('w.name', 'warehouseName')
+      .addSelect('SUM(sb.quantity)', 'quantity')
+      .groupBy('sb.variantId')
+      .addGroupBy('sb.warehouseId')
+      .addGroupBy('w.code')
+      .addGroupBy('w.name')
+      .orderBy('sb.variantId', 'ASC')
+      .addOrderBy('w.code', 'ASC');
+
+    const raw = await qb.getRawMany();
+    return raw.map((r) => ({
+      variantId: r.variantId,
+      warehouseId: r.warehouseId,
+      warehouseCode: r.warehouseCode,
+      warehouseName: r.warehouseName,
+      quantity: String(r.quantity ?? '0'),
+    }));
+  }
+
+  async listInventoryCheckDetailLines(
+    variantIds: string[],
+    warehouseId?: string,
+    locationId?: string,
+  ): Promise<InventoryCheckDetailLineRow[]> {
+    if (variantIds.length === 0) {
+      return [];
+    }
+    const qb = this.repository
+      .createQueryBuilder('sb')
+      .innerJoin(
+        Warehouse,
+        'w',
+        'w.id = sb.warehouseId AND w.deletedAt IS NULL',
+      )
+      .innerJoin(
+        Location,
+        'loc',
+        'loc.id = sb.locationId AND loc.deletedAt IS NULL',
+      )
+      .where('sb.variantId IN (:...variantIds)', { variantIds })
+      .andWhere('CAST(sb.quantity AS DECIMAL) > 0');
+
+    if (warehouseId) {
+      qb.andWhere('sb.warehouseId = :warehouseId', { warehouseId });
+    }
+    if (locationId) {
+      qb.andWhere('sb.locationId = :locationId', { locationId });
+    }
+
+    qb.select('sb.variantId', 'variantId')
+      .addSelect('sb.warehouseId', 'warehouseId')
+      .addSelect('w.code', 'warehouseCode')
+      .addSelect('w.name', 'warehouseName')
+      .addSelect('sb.locationId', 'locationId')
+      .addSelect('loc.code', 'locationCode')
+      .addSelect('loc.name', 'locationName')
+      .addSelect('sb.quantity', 'quantity')
+      .addSelect('sb.updatedAt', 'balanceUpdatedAt')
+      .orderBy('sb.variantId', 'ASC')
+      .addOrderBy('w.code', 'ASC')
+      .addOrderBy('loc.code', 'ASC');
+
+    const raw = await qb.getRawMany();
+    return raw.map((r) => ({
+      variantId: r.variantId,
+      warehouseId: r.warehouseId,
+      warehouseCode: r.warehouseCode,
+      warehouseName: r.warehouseName,
+      locationId: r.locationId,
+      locationCode: r.locationCode,
+      locationName: r.locationName ?? null,
+      quantity: String(r.quantity ?? '0'),
+      balanceUpdatedAt: r.balanceUpdatedAt,
+    }));
   }
 }

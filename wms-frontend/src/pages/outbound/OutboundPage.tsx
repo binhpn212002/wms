@@ -160,6 +160,14 @@ export function OutboundPage() {
         loading={listLoading}
         pagination={pagination}
         dataSource={rows}
+        onRow={(record) => ({
+          onClick: (e) => {
+            const t = e.target as HTMLElement
+            if (t.closest('button') || t.closest('.ant-btn')) return
+            setLinesRow(record)
+          },
+          style: { cursor: 'pointer' },
+        })}
         columns={[
           { title: 'Số phiếu', dataIndex: 'documentNo', width: 180 },
           { title: 'Ngày', dataIndex: 'documentDate', width: 120 },
