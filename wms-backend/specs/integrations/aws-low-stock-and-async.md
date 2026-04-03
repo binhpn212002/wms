@@ -5,6 +5,7 @@
 - [WMS MVP — tổng quan](../wms-mvp-overview.md)
 - [Tồn kho — basic design](../inventory/basic-design.md)
 - [Báo cáo — basic design](../reports/basic-design.md)
+- [Setup AWS trên máy (Windows) — IAM & CLI](./aws-setup-may-tinh-iam-cli.md)
 
 ## Mục đích
 
