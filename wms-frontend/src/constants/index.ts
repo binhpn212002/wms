@@ -15,8 +15,9 @@ export const ROUTES = {
   USERS: '/users',
 } as const
 
+/** Backend `main.ts` uses global prefix `api/v1`. */
 export const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000/api'
+  import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000/api/v1'
 
 /** Key used with localStorage when persisting the access token (e.g. after login). */
 export const AUTH_TOKEN_STORAGE_KEY = 'wms_access_token'
