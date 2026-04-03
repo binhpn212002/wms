@@ -1,0 +1,1 @@
+export { InboundPage } from './InboundPage'
