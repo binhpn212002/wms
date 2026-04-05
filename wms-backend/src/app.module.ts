@@ -6,7 +6,9 @@ import { AppService } from './app.service';
 import appConfig from './config/app.config';
 import databaseConfig from './config/database.config';
 import firebaseConfig from './config/firebase.config';
+import internalConfig from './config/internal.config';
 import jwtConfig from './config/jwt.config';
+import lowStockAlertConfig from './config/low-stock-alert.config';
 import redisConfig from './config/redis.config';
 import { AttributeValuesModule } from './modules/attribute-values/attribute-values.module';
 import { AttributesModule } from './modules/attributes/attributes.module';
@@ -20,13 +22,22 @@ import { InventoryModule } from './modules/inventory/inventory.module';
 import { WarehousesModule } from './modules/warehouses/warehouses.module';
 import { UserModule } from './modules/user/user.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { InternalModule } from './modules/internal/internal.module';
 import { TransfersModule } from './modules/transfers/transfers.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [appConfig, databaseConfig, redisConfig, jwtConfig, firebaseConfig],
+      load: [
+        appConfig,
+        databaseConfig,
+        redisConfig,
+        jwtConfig,
+        firebaseConfig,
+        internalConfig,
+        lowStockAlertConfig,
+      ],
       envFilePath: ['.env.local', '.env'],
     }),
     TypeOrmModule.forRootAsync({
@@ -60,6 +71,7 @@ import { TransfersModule } from './modules/transfers/transfers.module';
     WarehousesModule,
     UserModule,
     AuthModule,
+    InternalModule,
     // RedisModule,
   ],
   controllers: [AppController],

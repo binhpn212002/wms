@@ -3,6 +3,9 @@
 /node_modules
 /build
 
+# SST (generated types + local state)
+.sst
+
 # Logs
 logs
 *.log

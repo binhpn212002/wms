@@ -6,6 +6,9 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
+    "infra:dev": "sst dev",
+    "infra:deploy": "sst deploy",
+    "infra:remove": "sst remove",
     "build": "nest build",
     "seed": "ts-node -r tsconfig-paths/register src/database/run-seed.ts",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -21,6 +24,8 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@aws-sdk/client-sesv2": "^3.1024.0",
+    "@aws-sdk/client-sqs": "^3.1024.0",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.2.0",
     "@nestjs/core": "^10.0.0",
@@ -40,6 +45,7 @@
     "pg": "^8.13.1",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
+    "sst": "^3.17.0",
     "typeorm": "^0.3.20"
   },
   "devDependencies": {
