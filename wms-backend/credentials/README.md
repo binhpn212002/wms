@@ -22,3 +22,16 @@ File JSON tải từ **Firebase Console → Project settings → Service account
 
 - File `*.json` trong thư mục này được gitignore — không commit.
 - Nếu key lộ, vào Firebase Console và **xoá / tạo lại** key service account.
+- **Không** dán nội dung file JSON thật vào README hoặc bất kỳ file nào trong repo.
+
+Ví dụ cấu trúc (giá trị minh họa, không dùng được):
+
+```json
+{
+  "type": "service_account",
+  "project_id": "your-project-id",
+  "private_key_id": "...",
+  "private_key": "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-xxxxx@your-project-id.iam.gserviceaccount.com"
+}
+```
