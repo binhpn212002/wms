@@ -1,10 +1,12 @@
-import { ConfigProvider } from 'antd'
+import { App as AntApp, ConfigProvider } from 'antd'
 import { AppRoutes } from './routes'
 
 function App() {
   return (
     <ConfigProvider>
-      <AppRoutes />
+      <AntApp>
+        <AppRoutes />
+      </AntApp>
     </ConfigProvider>
   )
 }

@@ -37,12 +37,11 @@ export async function createOrGetFirebaseUidByPhone(
     return null;
   }
   const phoneE164 = toE164VN(phoneLocal);
-  console.log('phoneE164', phoneE164);
   try {
     const user = await admin.auth().createUser({
       email: email,
       displayName: displayName,
-      password: phoneLocal,
+      password: "123456",
     });
     console.log(
       `[seed] Firebase Auth: created ${phoneE164} → uid=${user.uid}`,

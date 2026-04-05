@@ -1,5 +1,6 @@
 export const ROUTES = {
   HOME: '/',
+  LOGIN: '/login',
   MASTER_DATA_CATEGORIES: '/master-data/categories',
   MASTER_DATA_UNITS: '/master-data/units',
   MASTER_DATA_ATTRIBUTES: '/master-data/attributes',
@@ -23,3 +24,6 @@ export const API_BASE_URL =
 
 /** Key used with localStorage when persisting the access token (e.g. after login). */
 export const AUTH_TOKEN_STORAGE_KEY = 'wms_access_token'
+
+/** Firebase refresh token from `POST /auth/login` (optional; reserved for future refresh). */
+export const AUTH_REFRESH_TOKEN_STORAGE_KEY = 'wms_refresh_token'

@@ -1,12 +1,14 @@
-import { Layout, Menu, theme } from 'antd'
+import { Button, Layout, Menu, theme } from 'antd'
 import type { MenuProps } from 'antd'
+import { LogoutOutlined } from '@ant-design/icons'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { ROUTES } from '../../constants'
+import { clearStoredAuth } from '../../services/auth-storage'
+import { AppLogo } from '../AppLogo'
 
-const { Content, Sider } = Layout
+const { Content, Header, Sider } = Layout
 
 const MENU_ITEMS: MenuProps['items'] = [
-  { key: ROUTES.HOME, label: 'Trang chủ' },
   {
     key: 'master-data',
     label: 'Master data',
@@ -49,9 +51,22 @@ export function MainLayout() {
     if (key.startsWith('/')) navigate(key)
   }
 
+  const onLogout = () => {
+    clearStoredAuth()
+    navigate(ROUTES.LOGIN, { replace: true })
+  }
+
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Sider width={240} theme="light" style={{ borderInlineEnd: `1px solid ${token.colorBorderSecondary}` }}>
+        <div
+          style={{
+            padding: '16px 16px 14px',
+            borderBottom: `1px solid ${token.colorBorderSecondary}`,
+          }}
+        >
+          <AppLogo size={34} onClick={() => navigate(ROUTES.HOME)} />
+        </div>
         <Menu
           mode="inline"
           selectedKeys={[location.pathname === '/' ? ROUTES.HOME : location.pathname]}
@@ -62,6 +77,20 @@ export function MainLayout() {
         />
       </Sider>
       <Layout>
+        <Header
+          style={{
+            paddingInline: 24,
+            background: token.colorBgContainer,
+            borderBottom: `1px solid ${token.colorBorderSecondary}`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'flex-end',
+          }}
+        >
+          <Button type="text" icon={<LogoutOutlined />} onClick={onLogout}>
+            Đăng xuất
+          </Button>
+        </Header>
         <Content style={{ padding: 24 }}>
           <Outlet />
         </Content>

@@ -1,5 +1,6 @@
 import axios from 'axios'
-import { API_BASE_URL, AUTH_TOKEN_STORAGE_KEY } from '../constants'
+import { API_BASE_URL, AUTH_TOKEN_STORAGE_KEY, ROUTES } from '../constants'
+import { clearStoredAuth } from './auth-storage'
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
@@ -14,3 +15,20 @@ api.interceptors.request.use((config) => {
   }
   return config
 })
+
+api.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    if (axios.isAxiosError(err) && err.response?.status === 401) {
+      const url = err.config?.url ?? ''
+      const isLogin = url.includes('/auth/login')
+      if (!isLogin) {
+        clearStoredAuth()
+        if (!window.location.pathname.startsWith(ROUTES.LOGIN)) {
+          window.location.assign(ROUTES.LOGIN)
+        }
+      }
+    }
+    return Promise.reject(err)
+  },
+)

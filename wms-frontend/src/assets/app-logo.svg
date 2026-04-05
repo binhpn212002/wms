@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+  <defs>
+    <linearGradient id="wms-logo-fill" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4096ff" />
+      <stop offset="100%" stop-color="#1677ff" />
+    </linearGradient>
+  </defs>
+  <rect width="40" height="40" rx="9" fill="#e6f4ff" />
+  <path
+    fill="url(#wms-logo-fill)"
+    d="M9 12h22v3.5H9V12zm0 7h9.5v12H9V19zm12.5 0H31v12H21.5V19z"
+  />
+  <path fill="#1677ff" d="M14 24h2.5v3H14v-3zm9 0h2.5v3H23v-3z" opacity="0.85" />
+</svg>
